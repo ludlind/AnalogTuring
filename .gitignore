@@ -1,0 +1,32 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Libraries
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+build/
+bin/
+obj/
+
+# IDE specific files (VS Code, CLion, Xcode, Visual Studio)
+.vscode/
+.idea/
+*.suo
+*.sln
+*.vcxproj
+.DS_Store
