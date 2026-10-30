@@ -30,3 +30,11 @@ obj/
 *.sln
 *.vcxproj
 .DS_Store
+
+# Build output
+analog_tm
+
+# Vim swap files
+*.swp
+*.swo
+*~
