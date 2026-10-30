@@ -7,6 +7,7 @@
 
 #include "state.h"
 #include "program.h"
+#include "models/common.h"
 #include "visual.h"
 #include "editview.h"
 
