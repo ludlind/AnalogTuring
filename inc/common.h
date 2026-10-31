@@ -22,10 +22,6 @@
 #define WIDTH 980
 #define HEIGHT 900
 
-typedef struct AppS {
-    MouseCursor cursor;
-} AppT;
-
 typedef struct StateS {
     float S;
     float X;
@@ -63,6 +59,13 @@ typedef struct ParametersS {
     float dt;
     float sigma_M;
 } ParametersT;
+
+// Shared application context, passed as ctx to the built-in panels.
+typedef struct AppS {
+    MouseCursor cursor;
+    ProgramT *program_p;
+    ParametersT *parameters_p;
+} AppT;
 
 /*---------FUNCTIONS--------*/
 

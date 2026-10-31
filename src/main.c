@@ -10,19 +10,7 @@
 #include "simview.h"
 #include "editview.h"
 #include "paramview.h"
-
-typedef enum {
-    MODE_SIMULATION = 0,
-    MODE_EDIT,
-    MODE_PARAM,
-    NUMBER_OF_MODES
-} ApplicationModeE;
-
-char modeNames[NUMBER_OF_MODES][32] = {
-    "Simulation View",
-    "Edit View",
-    "Parameter View"
-};
+#include "panel.h"
 
 ParametersT parameters = {
     0.3,
@@ -33,9 +21,11 @@ ParametersT parameters = {
 
 AppT app = {
     .cursor = MOUSE_CURSOR_DEFAULT,
+    .program_p = NULL,          // set in main() once the program is initialized
+    .parameters_p = &parameters,
 };
 
-ApplicationModeE mode = MODE_SIMULATION;
+PanelListT panels;
 
 static Rectangle menuPane = {
     0, 0, WIDTH, 50
@@ -44,7 +34,52 @@ static Rectangle mainPane = {
     0, 50, WIDTH, HEIGHT - 50
 };
 
-void DrawMenu(void);
+/*---------PANELS--------*/
+
+static void updateSimulationPanel(void *ctx)
+{
+    AppT *app_p = ctx;
+
+    // Called at the very start of the frame, so this is effectively the frame start.
+    double frameStart = GetTime();
+
+    if (IsKeyPressed(KEY_R))
+    {
+        InitState(app_p->parameters_p, app_p->program_p);
+    }
+
+    int steps = 0;
+    while ((GetTime() - frameStart) < app_p->parameters_p->simBudget*GetFrameTime()
+           && steps < app_p->parameters_p->maxSteps)
+    {
+        UpdateState(app_p->program_p);
+        steps++;
+    }
+}
+
+static void drawSimulationPanel(void *ctx)
+{
+    AppT *app_p = ctx;
+    DrawSimulationView(app_p->program_p);
+}
+
+static void updateEditPanel(void *ctx)
+{
+    AppT *app_p = ctx;
+    HandleInputEditView(app_p, app_p->program_p);
+}
+
+static void drawEditPanel(void *ctx)
+{
+    AppT *app_p = ctx;
+    DrawEditView(app_p->program_p);
+}
+
+static void drawParamPanel(void *ctx)
+{
+    AppT *app_p = ctx;
+    DrawParamView(app_p->parameters_p);
+}
 
 int main(void)
 {
@@ -53,6 +88,7 @@ int main(void)
     SetExitKey(KEY_Q);
 
     ProgramT* program_p = getProgram();
+    app.program_p = program_p;
     InitState(&parameters, program_p);
 
     Camera2D menuPaneCamera = {0};
@@ -67,32 +103,31 @@ int main(void)
     mainPaneCamera.zoom = 1.0f;
     mainPaneCamera.rotation = 0.0f;
 
+    addPanel(&panels, (PanelT){
+        .name = "Simulation",
+        .update = updateSimulationPanel,
+        .draw = drawSimulationPanel,
+        .ctx = &app,
+    });
+    addPanel(&panels, (PanelT){
+        .name = "Edit",
+        .update = updateEditPanel,
+        .draw = drawEditPanel,
+        .ctx = &app,
+    });
+    addPanel(&panels, (PanelT){
+        .name = "Settings",
+        .update = NULL,
+        .draw = drawParamPanel,
+        .ctx = &app,
+    });
+
     while (!WindowShouldClose())
     {
-        double frameStart = GetTime();
         app.cursor = MOUSE_CURSOR_DEFAULT;
 
         SetMouseOffset(-mainPane.x, -mainPane.y);
-        switch (mode)
-        {
-        case MODE_SIMULATION:
-            if (IsKeyPressed(KEY_R))
-            {
-                InitState(&parameters, program_p);
-            }
-
-            int steps = 0;
-            while ((GetTime() - frameStart) < parameters.simBudget*GetFrameTime() && steps < parameters.maxSteps) {
-                UpdateState(program_p);
-                steps++;
-            }
-            break;
-        case MODE_EDIT:
-            HandleInputEditView(&app, program_p);
-            break;
-        default:
-            // do nothing
-        }
+        updateActivePanel(&panels);
         SetMouseCursor(app.cursor);
 
         BeginDrawing();
@@ -100,25 +135,13 @@ int main(void)
         BeginScissorMode(mainPane.x, mainPane.y, mainPane.width, mainPane.height);
         BeginMode2D(mainPaneCamera);
         SetMouseOffset(-mainPane.x, -mainPane.y);
-        switch (mode)
-        {
-        case MODE_SIMULATION:
-            DrawSimulationView(program_p);
-            break;
-        case MODE_EDIT:
-            DrawEditView(program_p);
-            break;
-        case MODE_PARAM:
-            DrawParamView(&parameters);
-        default:
-            // do nothing
-        }
+        drawActivePanel(&panels);
         EndMode2D();
         EndScissorMode();
         BeginScissorMode(menuPane.x, menuPane.y, menuPane.width, menuPane.height);
         BeginMode2D(menuPaneCamera);
         SetMouseOffset(-menuPane.x, -menuPane.y);
-        DrawMenu();
+        drawPanelMenu(&panels, (Rectangle){20, 20, 160, 20});
         EndMode2D();
         EndScissorMode();
         EndDrawing();
@@ -129,19 +152,4 @@ int main(void)
 
     CloseWindow();
     return 0;
-}
-
-void DrawMenu(void)
-{
-    /*for (int i = 0; i < NUMBER_OF_MODES; i++)
-    {
-        if (GuiToggle((Rectangle){120*i + 20, 10, 110, 20}, modeNames[i], mode == i))
-        {
-            mode = i; 
-        }
-    }*/
-    GuiToggleGroup(
-        (Rectangle){20, 20, 160, 20},
-        "Simulation;Edit;Settings",
-        &mode);
 }
