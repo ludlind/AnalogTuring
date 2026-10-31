@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "state.h"
+#include "util.h"
 #include "models/common.h"
 
 int stateMap[NUMBER_OF_COLUMNS][NUMBER_OF_ROWS];
@@ -102,7 +103,7 @@ float interpInitM(float x)
     return (1.0f - w)*initM[i1] + w*initM[i2];
 }
 
-float writeGaussianInitM(float X, float intensity, float sigma)
+void writeGaussianInitM(float X, float intensity, float sigma)
 {
     float Mmin = getMemoryMinValue();
     float Mmax = getMemoryMaxValue();

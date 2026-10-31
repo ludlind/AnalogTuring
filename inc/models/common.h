@@ -36,6 +36,6 @@ void destroyProgram(void);
  
 float interpInitM(float x);
 
-float writeGaussianInitM(float X, float intensity, float sigma);
+void writeGaussianInitM(float X, float intensity, float sigma);
 
 #endif
