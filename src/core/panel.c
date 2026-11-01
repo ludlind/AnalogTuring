@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include "raygui.h"
-#include "panel.h"
+#include "gui/raygui.h"
+#include "core/panel.h"
 
 void addPanel(PanelListT *list, PanelT panel)
 {

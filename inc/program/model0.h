@@ -1,5 +1,5 @@
-#ifndef __MODELS_MODEL0_H
-#define __MODELS_MODEL0_H
+#ifndef __PROGRAM_MODEL0_H
+#define __PROGRAM_MODEL0_H
 
 void initModel0(void);
 float F_S(float S, float m);

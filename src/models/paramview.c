@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "raygui.h"
+#include "gui/raygui.h"
 
-#include "visual.h"
-#include "paramview.h"
+#include "gui/visual.h"
+#include "models/paramview.h"
 
 static Rectangle maxStepsSlider = { 360, 120, 300, 20 };
 static Rectangle simBudgetSlider = { 360, 150, 300, 20 };

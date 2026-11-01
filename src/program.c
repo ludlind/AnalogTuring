@@ -4,10 +4,10 @@
 #include <assert.h>
 
 #include "state.h"
-#include "models/model0.h"
-#include "models/common.h"
-#include "models/model1.h"
-#include "models/model2.h"
+#include "program/model0.h"
+#include "program/common.h"
+#include "program/model1.h"
+#include "program/model2.h"
 #include "program.h"
 
 #define USE_MODEL 2

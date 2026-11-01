@@ -1,5 +1,5 @@
-#ifndef __MODELS_MODEL2_H
-#define __MODELS_MODEL2_H
+#ifndef __PROGRAM_MODEL2_H
+#define __PROGRAM_MODEL2_H
 
 void initModel2(void);
 

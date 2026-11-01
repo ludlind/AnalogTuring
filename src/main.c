@@ -4,13 +4,13 @@
 #include <assert.h>
 
 #include "common.h"
-#include "raygui.h"
+#include "gui/raygui.h"
 #include "state.h"
 #include "program.h"
-#include "simview.h"
-#include "editview.h"
-#include "paramview.h"
-#include "panel.h"
+#include "models/simview.h"
+#include "models/editview.h"
+#include "models/paramview.h"
+#include "core/panel.h"
 
 ParametersT parameters = {
     0.3,

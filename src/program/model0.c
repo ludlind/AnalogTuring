@@ -4,8 +4,8 @@
 #include <assert.h>
 
 #include "state.h"
-#include "util.h"
-#include "models/model0.h"
+#include "lib/util.h"
+#include "program/model0.h"
 
 void initModel0(void)
 {

@@ -1,5 +1,5 @@
-#ifndef __MODELS_COMMON_H
-#define __MODELS_COMMON_H
+#ifndef __PROGRAM_COMMON_H
+#define __PROGRAM_COMMON_H
 
 #define NUMBER_OF_COLUMNS 20
 #define NUMBER_OF_ROWS    20

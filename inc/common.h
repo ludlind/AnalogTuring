@@ -60,6 +60,17 @@ typedef struct ParametersS {
     float sigma_M;
 } ParametersT;
 
+/*
+
+typedef struct SolverS {
+
+} SolverT;
+
+typedef struct ModelS {
+
+} ModelT;
+*/
+
 // Shared application context, passed as ctx to the built-in panels.
 typedef struct AppS {
     MouseCursor cursor;

@@ -3,13 +3,13 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "raygui.h"
+#include "gui/raygui.h"
 
 #include "state.h"
 #include "program.h"
-#include "models/common.h"
-#include "visual.h"
-#include "editview.h"
+#include "program/common.h"
+#include "gui/visual.h"
+#include "models/editview.h"
 
 static Rectangle StateMap     = { 20, 20, 300, 300 };
 static Rectangle MemoryMap    = { 20, 340, 300, 300 };

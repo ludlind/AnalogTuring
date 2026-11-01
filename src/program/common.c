@@ -4,8 +4,8 @@
 #include <assert.h>
 
 #include "state.h"
-#include "util.h"
-#include "models/common.h"
+#include "lib/util.h"
+#include "program/common.h"
 
 int stateMap[NUMBER_OF_COLUMNS][NUMBER_OF_ROWS];
 

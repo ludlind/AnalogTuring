@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "util.h"
+#include "lib/util.h"
 
 float gaussian(float dx, float sigma)
 {

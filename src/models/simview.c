@@ -1,8 +1,8 @@
 #include <raylib.h>
 
-#include "visual.h"
+#include "gui/visual.h"
 #include "state.h"
-#include "simview.h"
+#include "models/simview.h"
 
 static Rectangle FSMapGr = { 20, 20, 300, 300 };
 static Rectangle FMMapGr = { 340, 20, 300, 300 };

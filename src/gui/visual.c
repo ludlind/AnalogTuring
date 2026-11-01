@@ -4,7 +4,7 @@
 #include <assert.h>
 
 #include "common.h"
-#include "visual.h"
+#include "gui/visual.h"
 
 #define NUM_OF_COLORMAPS 1
 
