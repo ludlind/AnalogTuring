@@ -12,7 +12,7 @@ SettingsT settings = {
         .simBudget = 0.3f,
         .maxSteps = 100,
     },
-    .selectedModel = 2,
+    .selectedModel = 1,
 };
 
 PanelListT panels;

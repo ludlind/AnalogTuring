@@ -2,12 +2,10 @@
 
 #include "models/registry.h"
 
-extern const ModelT Model1DConstant;
 extern const ModelT Model1DGaussian;
 extern const ModelT Model1DPixel;
 
 static const ModelT *const models[] = {
-    &Model1DConstant,
     &Model1DGaussian,
     &Model1DPixel,
 };
