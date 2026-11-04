@@ -8,6 +8,51 @@
 
 #define NUM_OF_COLORMAPS 1
 
+#define AXIS_FONT_SIZE  16
+#define TITLE_FONT_SIZE 20
+#define AXIS_COLOR      LIGHTGRAY
+
+static void drawRotatedText(const char *text, float x, float y)
+{
+    Font font = GetFontDefault();
+    DrawTextPro(font, text, (Vector2){ x, y }, (Vector2){ 0, 0 }, -90.0f,
+                AXIS_FONT_SIZE, AXIS_FONT_SIZE/10.0f, AXIS_COLOR);
+}
+
+static void drawAxes(Rectangle rect, PlotAxesT axes)
+{
+    if (axes.title)
+    {
+        int w = MeasureText(axes.title, TITLE_FONT_SIZE);
+        DrawText(axes.title, rect.x + (rect.width - w)/2, rect.y - TITLE_FONT_SIZE - 4,
+                 TITLE_FONT_SIZE, RAYWHITE);
+    }
+
+    float below = rect.y + rect.height + 3;
+    const char *xminText = TextFormat("%.3g", axes.xmin);
+    DrawText(xminText, rect.x, below, AXIS_FONT_SIZE, AXIS_COLOR);
+    const char *xmaxText = TextFormat("%.3g", axes.xmax);
+    DrawText(xmaxText, rect.x + rect.width - MeasureText(xmaxText, AXIS_FONT_SIZE), below,
+             AXIS_FONT_SIZE, AXIS_COLOR);
+    if (axes.xlabel)
+    {
+        int w = MeasureText(axes.xlabel, AXIS_FONT_SIZE);
+        DrawText(axes.xlabel, rect.x + (rect.width - w)/2, below, AXIS_FONT_SIZE, AXIS_COLOR);
+    }
+
+    const char *ymaxText = TextFormat("%.3g", axes.ymax);
+    DrawText(ymaxText, rect.x - MeasureText(ymaxText, AXIS_FONT_SIZE) - 4, rect.y,
+             AXIS_FONT_SIZE, AXIS_COLOR);
+    const char *yminText = TextFormat("%.3g", axes.ymin);
+    DrawText(yminText, rect.x - MeasureText(yminText, AXIS_FONT_SIZE) - 4,
+             rect.y + rect.height - AXIS_FONT_SIZE, AXIS_FONT_SIZE, AXIS_COLOR);
+    if (axes.ylabel)
+    {
+        int w = MeasureText(axes.ylabel, AXIS_FONT_SIZE);
+        drawRotatedText(axes.ylabel, rect.x - 4 - AXIS_FONT_SIZE, rect.y + (rect.height + w)/2);
+    }
+}
+
 
 Color ColorMap1(float v)
 {
@@ -28,10 +73,12 @@ Color (*ColorMaps[NUM_OF_COLORMAPS])(float) = {
 void DrawMap(Rectangle rect, int cellSize,
              int lineThickness, int colorMap,
              MapFunc map, const void *ctx,
-             float xmin, float xmax,
-             float ymin, float ymax,
+             PlotAxesT axes,
              float zmin, float zmax)
 {
+    float xmin = axes.xmin, xmax = axes.xmax;
+    float ymin = axes.ymin, ymax = axes.ymax;
+
     assert(colorMap >= 0 && colorMap < NUM_OF_COLORMAPS);
     Color (*ColorMap)(float) = ColorMaps[colorMap];
 
@@ -57,14 +104,18 @@ void DrawMap(Rectangle rect, int cellSize,
             );
         }
     }
+
+    drawAxes(rect, axes);
 }
 
 void DrawScope(Rectangle rect,
                int lineThickness,
                ScopeFunc func, const void *ctx,
-               float xmin, float xmax,
-               float ymin, float ymax)
+               PlotAxesT axes)
 {
+    float xmin = axes.xmin, xmax = axes.xmax;
+    float ymin = axes.ymin, ymax = axes.ymax;
+
     DrawRectangleRec(rect, (Color){ 15, 18, 24, 255 });
     DrawRectangleLinesEx(rect, lineThickness, RAYWHITE);
 
@@ -109,14 +160,18 @@ void DrawScope(Rectangle rect,
 
         prev = p;
     }
+
+    drawAxes(rect, axes);
 }
 
 void DrawDot(Rectangle map, int margin,
              float x, float y,
-             float xmin, float xmax,
-             float ymin, float ymax,
+             PlotAxesT axes,
              Color color)
 {
+    float xmin = axes.xmin, xmax = axes.xmax;
+    float ymin = axes.ymin, ymax = axes.ymax;
+
     if(x > xmax || x < xmin || y > ymax || y < ymin)
     {
         return;

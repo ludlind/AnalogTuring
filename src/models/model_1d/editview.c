@@ -6,8 +6,8 @@
 #include "models/model_1d/program_common.h"
 #include "models/model_1d/editview.h"
 
-static Rectangle StateMap     = { 20, 20, 300, 300 };
-static Rectangle MemoryMap    = { 20, 340, 300, 300 };
+static Rectangle StateMap     = { 65, 30, 260, 260 };
+static Rectangle MemoryMap    = { 65, 380, 260, 260 };
 static Rectangle StateSlider  = { 440, 20, 300, 20 };
 static Rectangle FSSlider     = { 440, 50, 300, 20 };
 static Rectangle FXSlider     = { 440, 80, 300, 20 };
@@ -16,9 +16,20 @@ static Rectangle StartSSlider = { 440, 170, 300, 20 };
 static Rectangle DtSlider     = { 440, 200, 300, 20 };
 static Rectangle SigmaMSlider = { 440, 230, 300, 20 };
 
+static const PlotAxesT stateMapAxes = {
+    "State map", "S", "m",
+    STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+};
+static const PlotAxesT initTapeAxes = {
+    "Initial tape M0(x)", "x", "M",
+    MEMORY_START_POSITION, MEMORY_STOP_POSITION, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+};
+
 static float plotStateMap(const void *ctx, float S, float m)
 {
-    return StateMapGetValueF(ctx, S, m);
+    float Snorm = (S - STATE_MIN_VALUE)/(STATE_MAX_VALUE - STATE_MIN_VALUE);
+    float mnorm = (m - MEMORY_MIN_VALUE)/(MEMORY_MAX_VALUE - MEMORY_MIN_VALUE);
+    return StateMapGetValueF(ctx, Snorm, mnorm);
 }
 
 static float plotInitM(const void *ctx, float x)
@@ -29,15 +40,6 @@ static float plotInitM(const void *ctx, float x)
 void DrawEditView(void *data)
 {
     Model1DDataT *d = model1d_of(data);
-
-    float Smin = STATE_MIN_VALUE;
-    float Smax = STATE_MAX_VALUE;
-
-    float Xmin = MEMORY_START_POSITION;
-    float Xmax = MEMORY_STOP_POSITION;
-
-    float Mmin = MEMORY_MIN_VALUE;
-    float Mmax = MEMORY_MAX_VALUE;
 
     GuiSpinner(StateSlider, TextFormat("State %d", d->selectedState), &d->selectedState, 0, NUMBER_OF_STATES - 1, true);
 
@@ -54,10 +56,10 @@ void DrawEditView(void *data)
     d->parameters.dt = powf(10.0f, logDt);
     d->parameters.sigma_M = powf(10.0f, logSigmaM);
 
-    DrawMap(StateMap, 5, 2, 0, plotStateMap, d, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, (float)NUMBER_OF_STATES);
-    DrawDot(StateMap, 2, d->startS, interpInitM(d, 0.0f), Smin, Smax, Mmin, Mmax, BLACK);
+    DrawMap(StateMap, 5, 2, 0, plotStateMap, d, stateMapAxes, 0.0f, (float)NUMBER_OF_STATES);
+    DrawDot(StateMap, 2, d->startS, interpInitM(d, 0.0f), stateMapAxes, BLACK);
 
-    DrawScope(MemoryMap, 2, plotInitM, d, Xmin, Xmax, Mmin, Mmax);
+    DrawScope(MemoryMap, 2, plotInitM, d, initTapeAxes);
 }
 
 void HandleInputEditView(void *data)

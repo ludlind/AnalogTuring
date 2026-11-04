@@ -4,12 +4,37 @@
 #include "models/model_1d/solver.h"
 #include "models/model_1d/simview.h"
 
-static Rectangle FSMapGr = { 20, 20, 300, 300 };
-static Rectangle FMMapGr = { 340, 20, 300, 300 };
-static Rectangle FXMapGr = { 660, 20, 300, 300 };
-static Rectangle SMemGr  = { 20, 340, 300, 200 };
-static Rectangle XMemGr  = { 340, 340, 300, 200 };
-static Rectangle mMemGr  = { 660, 340, 300, 200 };
+static Rectangle FSMapGr = { 65, 30, 260, 260 };
+static Rectangle FMMapGr = { 385, 30, 260, 260 };
+static Rectangle FXMapGr = { 705, 30, 260, 260 };
+static Rectangle SMemGr  = { 65, 380, 260, 200 };
+static Rectangle XMemGr  = { 385, 380, 260, 200 };
+static Rectangle tapeGr  = { 705, 380, 260, 200 };
+
+static const PlotAxesT FSAxes = {
+    "F_S(S, m)", "S", "m",
+    STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+};
+static const PlotAxesT FMAxes = {
+    "F_M(S, m)", "S", "m",
+    STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+};
+static const PlotAxesT FXAxes = {
+    "F_X(S, m)", "S", "m",
+    STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+};
+static const PlotAxesT SHistoryAxes = {
+    "S(t)", "t", "S",
+    0.0f, 0.0f, STATE_MIN_VALUE, STATE_MAX_VALUE,
+};
+static const PlotAxesT XHistoryAxes = {
+    "X(t)", "t", "X",
+    0.0f, 0.0f, MEMORY_START_POSITION, MEMORY_STOP_POSITION,
+};
+static const PlotAxesT tapeAxes = {
+    "Tape M(x)", "x", "M",
+    MEMORY_START_POSITION, MEMORY_STOP_POSITION, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+};
 
 static float plotFS(const void *ctx, float S, float m)
 {
@@ -39,9 +64,16 @@ static float plotXHistory(const void *ctx, float t)
     return interpX(ctx, t);
 }
 
-static float plotMemory(const void *ctx, float x)
+static float plotTape(const void *ctx, float x)
 {
     return interpM(ctx, x);
+}
+
+static PlotAxesT withTimeRange(PlotAxesT axes, float t1, float t2)
+{
+    axes.xmin = t1;
+    axes.xmax = t2;
+    return axes;
 }
 
 void DrawSimulationView(void *data)
@@ -54,24 +86,15 @@ void DrawSimulationView(void *data)
     float t1 = getMemoryStartTime(d);
     float t2 = d->state.t;
 
-    float Smin = STATE_MIN_VALUE;
-    float Smax = STATE_MAX_VALUE;
+    DrawMap(FSMapGr, 5, 2, 0, plotFS, d, FSAxes, -1.0f, 1.0f);
+    DrawMap(FMMapGr, 5, 2, 0, plotFM, d, FMAxes, -1.0f, 1.0f);
+    DrawMap(FXMapGr, 5, 2, 0, plotFX, d, FXAxes, -1.0f, 1.0f);
 
-    float Xmin = MEMORY_START_POSITION;
-    float Xmax = MEMORY_STOP_POSITION;
+    DrawDot(FSMapGr, 2, S, m, FSAxes, RAYWHITE);
+    DrawDot(FMMapGr, 2, S, m, FMAxes, RAYWHITE);
+    DrawDot(FXMapGr, 2, S, m, FXAxes, RAYWHITE);
 
-    float Mmin = MEMORY_MIN_VALUE;
-    float Mmax = MEMORY_MAX_VALUE;
-
-    DrawMap(FSMapGr, 5, 2, 0, plotFS, d, Smin, Smax, Mmin, Mmax, -1.0f, 1.0f);
-    DrawMap(FMMapGr, 5, 2, 0, plotFM, d, Smin, Smax, Mmin, Mmax, -1.0f, 1.0f);
-    DrawMap(FXMapGr, 5, 2, 0, plotFX, d, Smin, Smax, Mmin, Mmax, -1.0f, 1.0f);
-
-    DrawDot(FSMapGr, 2, S, m, Smin, Smax, Mmin, Mmax, RAYWHITE);
-    DrawDot(FMMapGr, 2, S, m, Smin, Smax, Mmin, Mmax, RAYWHITE);
-    DrawDot(FXMapGr, 2, S, m, Smin, Smax, Mmin, Mmax, RAYWHITE);
-
-    DrawScope(SMemGr, 2, plotSHistory, d, t1, t2, Smin, Smax);
-    DrawScope(XMemGr, 2, plotXHistory, d, t1, t2, Xmin, Xmax);
-    DrawScope(mMemGr, 2, plotMemory, d, Xmin, Xmax, Mmin, Mmax);
+    DrawScope(SMemGr, 2, plotSHistory, d, withTimeRange(SHistoryAxes, t1, t2));
+    DrawScope(XMemGr, 2, plotXHistory, d, withTimeRange(XHistoryAxes, t1, t2));
+    DrawScope(tapeGr, 2, plotTape, d, tapeAxes);
 }
