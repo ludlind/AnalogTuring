@@ -12,6 +12,11 @@ void addPanel(PanelListT *list, PanelT panel)
   list->panels[list->count++] = panel;
 }
 
+void clearPanels(PanelListT *list)
+{
+  list->count = 0;
+}
+
 void drawActivePanel(PanelListT *list)
 {
   if (list->active < 0 || list->active >= list->count)

@@ -3,6 +3,6 @@
 
 #include "common.h"
 
-void DrawParamView(ParametersT* parameters_p);
+void DrawParamView(SettingsT *settings);
 
 #endif

@@ -7,9 +7,12 @@
 #include "models/registry.h"
 #include "paramview.h"
 
-ParametersT parameters = {
-    0.3f,
-    100,
+SettingsT settings = {
+    .parameters = {
+        .simBudget = 0.3f,
+        .maxSteps = 100,
+    },
+    .selectedModel = 2,
 };
 
 PanelListT panels;
@@ -26,20 +29,34 @@ static void drawParamPanel(void *ctx)
     DrawParamView(ctx);
 }
 
+static void buildPanels(const ModelT *model, void *data)
+{
+    clearPanels(&panels);
+    model->addPanels(data, &panels);
+    addPanel(&panels, (PanelT){
+        .name = "Settings",
+        .update = NULL,
+        .draw = drawParamPanel,
+        .ctx = &settings,
+    });
+}
+
 int main(void)
 {
     InitWindow(WIDTH, HEIGHT, "Continuous Turing Machine");
     SetTargetFPS(60);
     SetExitKey(KEY_Q);
 
-    const ModelT *model = getModel(2);
-    void *data = model->create(&parameters);
+    int modelIndex = settings.selectedModel;
+    const ModelT *model = getModel(modelIndex);
+    void *data = model->create(&settings.parameters);
     if (data == NULL)
     {
         fprintf(stderr, "Failed to create model '%s'\n", model->name);
         CloseWindow();
         return 1;
     }
+    buildPanels(model, data);
 
     Camera2D menuPaneCamera = {0};
     menuPaneCamera.target = (Vector2){0,0};
@@ -53,16 +70,28 @@ int main(void)
     mainPaneCamera.zoom = 1.0f;
     mainPaneCamera.rotation = 0.0f;
 
-    model->addPanels(data, &panels);
-    addPanel(&panels, (PanelT){
-        .name = "Settings",
-        .update = NULL,
-        .draw = drawParamPanel,
-        .ctx = &parameters,
-    });
-
     while (!WindowShouldClose())
     {
+        if (settings.selectedModel != modelIndex)
+        {
+            const ModelT *next = getModel(settings.selectedModel);
+            void *nextData = next->create(&settings.parameters);
+            if (nextData == NULL)
+            {
+                fprintf(stderr, "Failed to create model '%s'\n", next->name);
+                settings.selectedModel = modelIndex;
+            }
+            else
+            {
+                model->destroy(data);
+                model = next;
+                data = nextData;
+                modelIndex = settings.selectedModel;
+                buildPanels(model, data);
+                panels.active = panels.count - 1;
+            }
+        }
+
         SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 
         SetMouseOffset(-mainPane.x, -mainPane.y);

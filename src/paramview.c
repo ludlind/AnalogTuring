@@ -1,18 +1,44 @@
+#include <string.h>
 #include <raylib.h>
 
 #include "gui/raygui.h"
+#include "models/registry.h"
 #include "paramview.h"
 
+static Rectangle modelPicker = { 360, 90, 300, 20 };
 static Rectangle maxStepsSlider = { 360, 120, 300, 20 };
 static Rectangle simBudgetSlider = { 360, 150, 300, 20 };
 
-void DrawParamView(ParametersT* parameters_p)
+static const char *modelNames(void)
 {
-    float maxStepsVar = parameters_p->maxSteps/1000.0f;
-    GuiSlider(maxStepsSlider, TextFormat("Maximum Steps = %d", parameters_p->maxSteps),
-              NULL, &maxStepsVar, 0.001f, 1.0f);
-    parameters_p->maxSteps = (int)(maxStepsVar*1000);
+    static char names[512] = "";
+    if (names[0] != '\0')
+    {
+        return names;
+    }
 
-    GuiSlider(simBudgetSlider, TextFormat("Simulation Budget = %0.2f%%", parameters_p->simBudget*100),
-              NULL, &parameters_p->simBudget, 0.0f, 1.0f);
+    for (int i = 0; i < getModelCount(); i++)
+    {
+        if (i > 0)
+        {
+            strncat(names, ";", sizeof(names) - strlen(names) - 1);
+        }
+        strncat(names, getModel(i)->name, sizeof(names) - strlen(names) - 1);
+    }
+    return names;
+}
+
+void DrawParamView(SettingsT *settings)
+{
+    ParametersT *parameters = &settings->parameters;
+
+    GuiComboBox(modelPicker, modelNames(), &settings->selectedModel);
+
+    float maxStepsVar = parameters->maxSteps/1000.0f;
+    GuiSlider(maxStepsSlider, TextFormat("Maximum Steps = %d", parameters->maxSteps),
+              NULL, &maxStepsVar, 0.001f, 1.0f);
+    parameters->maxSteps = (int)(maxStepsVar*1000);
+
+    GuiSlider(simBudgetSlider, TextFormat("Simulation Budget = %0.2f%%", parameters->simBudget*100),
+              NULL, &parameters->simBudget, 0.0f, 1.0f);
 }

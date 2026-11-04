@@ -22,6 +22,7 @@ typedef struct PanelListS {
 } PanelListT;
 
 void addPanel(PanelListT *list, PanelT panel);
+void clearPanels(PanelListT *list);
 void drawActivePanel(PanelListT *list);
 void updateActivePanel(PanelListT *list);
 void drawPanelMenu(PanelListT *list, Rectangle itemBounds);

@@ -13,6 +13,11 @@ typedef struct ParametersS {
     int   maxSteps;
 } ParametersT;
 
+typedef struct SettingsS {
+    ParametersT parameters;
+    int selectedModel;
+} SettingsT;
+
 /*---------FUNCTIONS--------*/
 
 static inline int wrapi(int i, int n)
