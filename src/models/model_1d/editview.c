@@ -8,13 +8,13 @@
 
 static Rectangle StateMap     = { 65, 30, 260, 260 };
 static Rectangle MemoryMap    = { 65, 380, 260, 260 };
-static Rectangle StateSlider  = { 440, 20, 300, 20 };
-static Rectangle FSSlider     = { 440, 50, 300, 20 };
-static Rectangle FXSlider     = { 440, 80, 300, 20 };
-static Rectangle FMSlider     = { 440, 110, 300, 20 };
-static Rectangle StartSSlider = { 440, 170, 300, 20 };
-static Rectangle DtSlider     = { 440, 200, 300, 20 };
-static Rectangle SigmaMSlider = { 440, 230, 300, 20 };
+static Rectangle StateSlider  = { 460, 20, 300, 20 };
+static Rectangle FSSlider     = { 460, 50, 300, 20 };
+static Rectangle FXSlider     = { 460, 80, 300, 20 };
+static Rectangle FMSlider     = { 460, 110, 300, 20 };
+static Rectangle StartSSlider = { 460, 170, 300, 20 };
+static Rectangle DtSlider     = { 460, 200, 300, 20 };
+static Rectangle SigmaMSlider = { 460, 230, 300, 20 };
 
 static const PlotAxesT stateMapAxes = {
     "State map", "S", "m",

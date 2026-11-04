@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <raylib.h>
 
-#define WIDTH 980
+#define WIDTH 1020
 #define HEIGHT 900
 
 typedef struct ParametersS {
