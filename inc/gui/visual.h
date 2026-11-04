@@ -4,16 +4,19 @@
 #include <raylib.h>
 #include "common.h"
 
+typedef float (*MapFunc)(const void *ctx, float x, float y);
+typedef float (*ScopeFunc)(const void *ctx, float x);
+
 Color ColorMap(float v);
 void DrawMap(Rectangle rect, int cellSize,
              int lineThickness, int colorMap,
-             float (*map)(float, float),
+             MapFunc map, const void *ctx,
              float xmin, float xmax,
              float ymin, float ymax,
              float zmin, float zmax);
 void DrawScope(Rectangle rect,
                int lineThickness,
-               float (*func)(float),
+               ScopeFunc func, const void *ctx,
                float xmin, float xmax,
                float ymin, float ymax);
 void DrawDot(Rectangle map, int margin,

@@ -3,36 +3,37 @@
 #include <time.h>
 #include <assert.h>
 
-#include "state.h"
 #include "lib/util.h"
-#include "program/common.h"
-#include "program/model1.h"
+#include "models/model_1d/velocity_gaussian.h"
 
-void initModel1(void)
+#define SIGMA_FS 0.1f
+#define SIGMA_FX 0.1f
+#define SIGMA_FM 0.1f
+
+static void init(Model1DDataT *data)
 {
-    initM = (float *) malloc(MEMORY_GRID_POINTS * sizeof(float));
     srand((unsigned int)time(NULL));
     for (int i = 0; i < NUMBER_OF_COLUMNS; i++)
     {
         for (int j = 0; j < NUMBER_OF_ROWS; j++)
         {
-            stateMap[i][j] = rand() % NUMBER_OF_STATES;
+            data->stateMap[i][j] = rand() % NUMBER_OF_STATES;
         }
     }
     for (int k = 0; k < NUMBER_OF_STATES; k++)
     {
-        FSvalues[k] = ((float)rand()/(float)(RAND_MAX)) * 0.1f - 0.05f;
-        FXvalues[k] = ((float)rand()/(float)(RAND_MAX)) * 0.1f - 0.05f;
-        FMvalues[k] = ((float)rand()/(float)(RAND_MAX)) * 0.1f - 0.05f;
+        data->FS[k] = ((float)rand()/(float)(RAND_MAX)) * 0.1f - 0.05f;
+        data->FX[k] = ((float)rand()/(float)(RAND_MAX)) * 0.1f - 0.05f;
+        data->FM[k] = ((float)rand()/(float)(RAND_MAX)) * 0.1f - 0.05f;
     }
 }
 
-float gaussian_states_F_S(float S, float m)
+static float F_S(const Model1DDataT *data, float S, float m)
 {
-    float SMin = getStateMinValue();
-    float SMax = getStateMaxValue();
-    float mMin = getMemoryMinValue();
-    float mMax = getMemoryMaxValue();
+    float SMin = STATE_MIN_VALUE;
+    float SMax = STATE_MAX_VALUE;
+    float mMin = MEMORY_MIN_VALUE;
+    float mMax = MEMORY_MAX_VALUE;
 
     float dS = (SMax - SMin)/(NUMBER_OF_COLUMNS-1);
     float dm = (mMax - mMin)/(NUMBER_OF_ROWS-1);
@@ -55,19 +56,19 @@ float gaussian_states_F_S(float S, float m)
                 continue;
             }
 
-            float scaleCoeff = FSvalues[stateMap[i][j]];
+            float scaleCoeff = data->FS[data->stateMap[i][j]];
             result += scaleCoeff * gaussian(distance, SIGMA_FS);
         }
     }
     return result;
 }
 
-float gaussian_states_F_X(float S, float m)
+static float F_X(const Model1DDataT *data, float S, float m)
 {
-    float SMin = getStateMinValue();
-    float SMax = getStateMaxValue();
-    float mMin = getMemoryMinValue();
-    float mMax = getMemoryMaxValue();
+    float SMin = STATE_MIN_VALUE;
+    float SMax = STATE_MAX_VALUE;
+    float mMin = MEMORY_MIN_VALUE;
+    float mMax = MEMORY_MAX_VALUE;
 
     float dS = (SMax - SMin)/(NUMBER_OF_COLUMNS-1);
     float dm = (mMax - mMin)/(NUMBER_OF_ROWS-1);
@@ -90,19 +91,19 @@ float gaussian_states_F_X(float S, float m)
                 continue;
             }
 
-            float scaleCoeff = FXvalues[stateMap[i][j]];
+            float scaleCoeff = data->FX[data->stateMap[i][j]];
             result += scaleCoeff * gaussian(distance, SIGMA_FX);
         }
     }
     return result;
 }
 
-float gaussian_states_F_M(float S, float m)
+static float F_M(const Model1DDataT *data, float S, float m)
 {
-    float SMin = getStateMinValue();
-    float SMax = getStateMaxValue();
-    float mMin = getMemoryMinValue();
-    float mMax = getMemoryMaxValue();
+    float SMin = STATE_MIN_VALUE;
+    float SMax = STATE_MAX_VALUE;
+    float mMin = MEMORY_MIN_VALUE;
+    float mMax = MEMORY_MAX_VALUE;
 
     float dS = (SMax - SMin)/(NUMBER_OF_COLUMNS-1);
     float dm = (mMax - mMin)/(NUMBER_OF_ROWS-1);
@@ -125,21 +126,18 @@ float gaussian_states_F_M(float S, float m)
                 continue;
             }
 
-            int stateIndex = stateMap[i][j];
+            int stateIndex = data->stateMap[i][j];
             assert(stateIndex >= 0 && stateIndex < NUMBER_OF_STATES);
-            float scaleCoeff = FMvalues[stateIndex];
+            float scaleCoeff = data->FM[stateIndex];
             result += scaleCoeff * gaussian(distance, SIGMA_FM);
         }
     }
     return result;
 }
 
-float gaussian_states_dMdt(StateT *state_p, float dx)
-{
-    float S = state_p->S;
-    float m = state_p->m;
-    float A = gaussian_states_F_M(S, m);
-
-    float sigma_M = state_p->sigma_M;
-    return A * gaussian(dx, sigma_M);
-}
+const VelocityFieldT VelocityGaussian = {
+    .init = init,
+    .F_S  = F_S,
+    .F_X  = F_X,
+    .F_M  = F_M,
+};

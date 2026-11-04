@@ -5,89 +5,24 @@
 #include <stdlib.h>
 #include <raylib.h>
 
-#define DT 0.1f
-
-#define MEMORY_GRID_POINTS 200001
-#define MEMORY_GRID_SIZE 0.00001f
-#define MEMORY_GRID_OFFSET -1.0f
-
-#define MEMORY_MIN_VALUE -1.0f
-#define MEMORY_MAX_VALUE 1.0f
-
-#define STATE_MIN_VALUE -1.0f
-#define STATE_MAX_VALUE 1.0f
-
-#define TIME_MEMORY_GRID_POINTS 10001
-
 #define WIDTH 980
 #define HEIGHT 900
 
-typedef struct StateS {
-    float S;
-    float X;
-    float *M;
-    float *Mnext;
-    float m;
-    float sigma_M;
-    float dt;
-    float t;
-} StateT;
-
-typedef struct MemoryS {
-    int   currentMemIndex;
-    float currentMemTime;
-    bool  wrapMem;
-    float SMem[TIME_MEMORY_GRID_POINTS];
-    float XMem[TIME_MEMORY_GRID_POINTS];
-    float mMem[TIME_MEMORY_GRID_POINTS];
-} MemoryT;
-
-typedef struct ProgramS {
-    void  (*Init)(void);
-    void  (*Destroy)(void);
-    void  (*InitState)(StateT*);
-    float (*F_S)(float, float);
-    float (*F_X)(float, float);
-    float (*F_M)(float, float);
-    float (*dMdt)(StateT*, float);
-    float startS;
-} ProgramT;
-
 typedef struct ParametersS {
     float simBudget;
-    int maxSteps;
-    float dt;
-    float sigma_M;
+    int   maxSteps;
 } ParametersT;
-
-/*
-
-typedef struct SolverS {
-
-} SolverT;
-
-typedef struct ModelS {
-
-} ModelT;
-*/
-
-// Shared application context, passed as ctx to the built-in panels.
-typedef struct AppS {
-    MouseCursor cursor;
-    ProgramT *program_p;
-    ParametersT *parameters_p;
-} AppT;
 
 /*---------FUNCTIONS--------*/
 
-static int wrapi(int i, int n)
+static inline int wrapi(int i, int n)
 {
     i %= n;
     if (i < 0) i += n;
     return i;
 }
 
-static float wrapf(float x, float min, float max)
+static inline float wrapf(float x, float min, float max)
 {
     float L = max - min;
 
@@ -97,7 +32,7 @@ static float wrapf(float x, float min, float max)
     return x;
 }
 
-static float clamp(float x, float min, float max)
+static inline float clamp(float x, float min, float max)
 {
     if (x < min)
     {

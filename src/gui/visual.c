@@ -27,7 +27,7 @@ Color (*ColorMaps[NUM_OF_COLORMAPS])(float) = {
 
 void DrawMap(Rectangle rect, int cellSize,
              int lineThickness, int colorMap,
-             float (*map)(float, float),
+             MapFunc map, const void *ctx,
              float xmin, float xmax,
              float ymin, float ymax,
              float zmin, float zmax)
@@ -45,7 +45,7 @@ void DrawMap(Rectangle rect, int cellSize,
             float x = xmin + ((float)px / inner.width) * (xmax - xmin);
             float y = ymin + (1.0f - ((float)py / inner.height)) * (ymax - ymin);
 
-            float v = (map(x, y) - zmin)/(zmax - zmin);
+            float v = (map(ctx, x, y) - zmin)/(zmax - zmin);
             v = clamp(v, 0.0f, 1.0f);
 
             DrawRectangle(
@@ -61,7 +61,7 @@ void DrawMap(Rectangle rect, int cellSize,
 
 void DrawScope(Rectangle rect,
                int lineThickness,
-               float (*func)(float),
+               ScopeFunc func, const void *ctx,
                float xmin, float xmax,
                float ymin, float ymax)
 {
@@ -95,7 +95,7 @@ void DrawScope(Rectangle rect,
         float u = (float)i / inner.width;
         float xarg = xmin + u * (xmax - xmin);
 
-        float v = (func(xarg) - ymin)/(ymax - ymin);
+        float v = (func(ctx, xarg) - ymin)/(ymax - ymin);
         v = clamp(v, 0.0f, 1.0f);
 
         Vector2 p = {

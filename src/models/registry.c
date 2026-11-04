@@ -1,0 +1,24 @@
+#include <assert.h>
+
+#include "models/registry.h"
+
+extern const ModelT Model1DConstant;
+extern const ModelT Model1DGaussian;
+extern const ModelT Model1DPixel;
+
+static const ModelT *const models[] = {
+    &Model1DConstant,
+    &Model1DGaussian,
+    &Model1DPixel,
+};
+
+int getModelCount(void)
+{
+    return (int)(sizeof(models) / sizeof(models[0]));
+}
+
+const ModelT *getModel(int modelIndex)
+{
+    assert(modelIndex >= 0 && modelIndex < getModelCount());
+    return models[modelIndex];
+}

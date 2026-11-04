@@ -1,0 +1,117 @@
+#include <raylib.h>
+#include <math.h>
+
+#include "gui/raygui.h"
+#include "gui/visual.h"
+#include "models/model_1d/program_common.h"
+#include "models/model_1d/editview.h"
+
+static Rectangle StateMap     = { 20, 20, 300, 300 };
+static Rectangle MemoryMap    = { 20, 340, 300, 300 };
+static Rectangle StateSlider  = { 440, 20, 300, 20 };
+static Rectangle FSSlider     = { 440, 50, 300, 20 };
+static Rectangle FXSlider     = { 440, 80, 300, 20 };
+static Rectangle FMSlider     = { 440, 110, 300, 20 };
+static Rectangle StartSSlider = { 440, 170, 300, 20 };
+static Rectangle DtSlider     = { 440, 200, 300, 20 };
+static Rectangle SigmaMSlider = { 440, 230, 300, 20 };
+
+static float plotStateMap(const void *ctx, float S, float m)
+{
+    return StateMapGetValueF(ctx, S, m);
+}
+
+static float plotInitM(const void *ctx, float x)
+{
+    return interpInitM(ctx, x);
+}
+
+void DrawEditView(void *data)
+{
+    Model1DDataT *d = model1d_of(data);
+
+    float Smin = STATE_MIN_VALUE;
+    float Smax = STATE_MAX_VALUE;
+
+    float Xmin = MEMORY_START_POSITION;
+    float Xmax = MEMORY_STOP_POSITION;
+
+    float Mmin = MEMORY_MIN_VALUE;
+    float Mmax = MEMORY_MAX_VALUE;
+
+    GuiSpinner(StateSlider, TextFormat("State %d", d->selectedState), &d->selectedState, 0, NUMBER_OF_STATES - 1, true);
+
+    int s = d->selectedState;
+    GuiSlider(FSSlider, TextFormat("F_S = %0.2f", d->FS[s]), NULL, &d->FS[s], -10.0f, 10.0f);
+    GuiSlider(FXSlider, TextFormat("F_X = %0.2f", d->FX[s]), NULL, &d->FX[s], -10.0f, 10.0f);
+    GuiSlider(FMSlider, TextFormat("F_M = %0.2f", d->FM[s]), NULL, &d->FM[s], -10.0f, 10.0f);
+    GuiSlider(StartSSlider, TextFormat("S_Start = %0.2f", d->startS), NULL, &d->startS, -1.0f, 1.0f);
+
+    float logDt = log10f(d->parameters.dt);
+    float logSigmaM = log10f(d->parameters.sigma_M);
+    GuiSlider(DtSlider, TextFormat("Delta T (log) = %0.2f", logDt), NULL, &logDt, -10.0f, 10.0f);
+    GuiSlider(SigmaMSlider, TextFormat("Sigma_M (log) = %0.2f", logSigmaM), NULL, &logSigmaM, -10.0f, 10.0f);
+    d->parameters.dt = powf(10.0f, logDt);
+    d->parameters.sigma_M = powf(10.0f, logSigmaM);
+
+    DrawMap(StateMap, 5, 2, 0, plotStateMap, d, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, (float)NUMBER_OF_STATES);
+    DrawDot(StateMap, 2, d->startS, interpInitM(d, 0.0f), Smin, Smax, Mmin, Mmax, BLACK);
+
+    DrawScope(MemoryMap, 2, plotInitM, d, Xmin, Xmax, Mmin, Mmax);
+}
+
+void HandleInputEditView(void *data)
+{
+    Model1DDataT *d = model1d_of(data);
+
+    Vector2 mousePos = GetMousePosition();
+
+    float Xmin = MEMORY_START_POSITION;
+    float Xmax = MEMORY_STOP_POSITION;
+
+    if (CheckCollisionPointRec(mousePos, StateMap))
+    {
+        SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
+
+        float x = ((float)mousePos.x - StateMap.x - 2.0f)/(StateMap.width - 4.0f);
+        float y = 1.0f - ((float)mousePos.y - StateMap.y - 2.0f)/(StateMap.height - 4.0f);
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        {
+            StateMapSetValue(d, x, y, d->selectedState);
+        }
+
+        float wheel = GetMouseWheelMove();
+        if (wheel > 0)
+        {
+            d->selectedState = (int)clamp(d->selectedState + 1, 0, NUMBER_OF_STATES - 1);
+        }
+        else if (wheel < 0)
+        {
+            d->selectedState = (int)clamp(d->selectedState - 1, 0, NUMBER_OF_STATES - 1);
+        }
+    }
+    else if (CheckCollisionPointRec(mousePos, MemoryMap))
+    {
+        SetMouseCursor(MOUSE_CURSOR_CROSSHAIR);
+
+        float x = ((float)mousePos.x - MemoryMap.x - 2.0f)/(MemoryMap.width - 4.0f);
+        float y = 1.0f - ((float)mousePos.y - MemoryMap.y - 2.0f)/(MemoryMap.height - 4.0f);
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        {
+            float sigma = powf(10.0f, d->brushSize);
+            writeGaussianInitM(d, Xmin + (Xmax - Xmin)*x, sigma*(0.2f*y - 0.1f), sigma);
+        }
+
+        float wheel = GetMouseWheelMove();
+        if (wheel > 0)
+        {
+            d->brushSize += 0.1f;
+        }
+        else if (wheel < 0)
+        {
+            d->brushSize -= 0.1f;
+        }
+    }
+}
