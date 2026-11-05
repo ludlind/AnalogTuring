@@ -3,6 +3,6 @@
 
 #include "models/model_1d/model.h"
 
-extern const VelocityFieldT VelocityPixel;
+extern const VelocityFieldT model1d_VelocityPixel;
 
 #endif

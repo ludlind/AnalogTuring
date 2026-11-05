@@ -29,15 +29,15 @@ static float plotStateMap(const void *ctx, float S, float m)
 {
     float Snorm = (S - STATE_MIN_VALUE)/(STATE_MAX_VALUE - STATE_MIN_VALUE);
     float mnorm = (m - MEMORY_MIN_VALUE)/(MEMORY_MAX_VALUE - MEMORY_MIN_VALUE);
-    return StateMapGetValueF(ctx, Snorm, mnorm);
+    return model1d_StateMapGetValueF(ctx, Snorm, mnorm);
 }
 
 static float plotInitM(const void *ctx, float x)
 {
-    return interpInitM(ctx, x);
+    return model1d_interpInitM(ctx, x);
 }
 
-void DrawEditView(void *data)
+void model1d_DrawEditView(void *data)
 {
     Model1DDataT *d = model1d_of(data);
 
@@ -57,12 +57,12 @@ void DrawEditView(void *data)
     d->parameters.sigma_M = powf(10.0f, logSigmaM);
 
     DrawMap(StateMap, 5, 2, 0, plotStateMap, d, stateMapAxes, 0.0f, (float)NUMBER_OF_STATES);
-    DrawDot(StateMap, 2, d->startS, interpInitM(d, 0.0f), stateMapAxes, BLACK);
+    DrawDot(StateMap, 2, d->startS, model1d_interpInitM(d, 0.0f), stateMapAxes, BLACK);
 
     DrawScope(MemoryMap, 2, plotInitM, d, initTapeAxes);
 }
 
-void HandleInputEditView(void *data)
+void model1d_HandleInputEditView(void *data)
 {
     Model1DDataT *d = model1d_of(data);
 
@@ -80,7 +80,7 @@ void HandleInputEditView(void *data)
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
-            StateMapSetValue(d, x, y, d->selectedState);
+            model1d_StateMapSetValue(d, x, y, d->selectedState);
         }
 
         float wheel = GetMouseWheelMove();
@@ -103,7 +103,7 @@ void HandleInputEditView(void *data)
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             float sigma = powf(10.0f, d->brushSize);
-            writeGaussianInitM(d, Xmin + (Xmax - Xmin)*x, sigma*(0.2f*y - 0.1f), sigma);
+            model1d_writeGaussianInitM(d, Xmin + (Xmax - Xmin)*x, sigma*(0.2f*y - 0.1f), sigma);
         }
 
         float wheel = GetMouseWheelMove();

@@ -56,17 +56,17 @@ static float plotFM(const void *ctx, float S, float m)
 
 static float plotSHistory(const void *ctx, float t)
 {
-    return interpS(ctx, t);
+    return model1d_interpS(ctx, t);
 }
 
 static float plotXHistory(const void *ctx, float t)
 {
-    return interpX(ctx, t);
+    return model1d_interpX(ctx, t);
 }
 
 static float plotTape(const void *ctx, float x)
 {
-    return interpM(ctx, x);
+    return model1d_interpM(ctx, x);
 }
 
 static PlotAxesT withTimeRange(PlotAxesT axes, float t1, float t2)
@@ -76,14 +76,14 @@ static PlotAxesT withTimeRange(PlotAxesT axes, float t1, float t2)
     return axes;
 }
 
-void DrawSimulationView(void *data)
+void model1d_DrawSimulationView(void *data)
 {
     Model1DDataT *d = model1d_of(data);
 
     float S = d->state.S;
     float m = d->state.m;
 
-    float t1 = getMemoryStartTime(d);
+    float t1 = model1d_getMemoryStartTime(d);
     float t2 = d->state.t;
 
     DrawMap(FSMapGr, 5, 2, 0, plotFS, d, FSAxes, -1.0f, 1.0f);

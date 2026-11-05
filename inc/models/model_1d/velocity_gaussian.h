@@ -3,6 +3,6 @@
 
 #include "models/model_1d/model.h"
 
-extern const VelocityFieldT VelocityGaussian;
+extern const VelocityFieldT model1d_VelocityGaussian;
 
 #endif

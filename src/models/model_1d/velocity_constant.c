@@ -25,7 +25,7 @@ static float F_M(const Model1DDataT *data, float S, float m)
     return 0.1f;
 }
 
-const VelocityFieldT VelocityConstant = {
+const VelocityFieldT model1d_VelocityConstant = {
     .init = init,
     .F_S  = F_S,
     .F_X  = F_X,

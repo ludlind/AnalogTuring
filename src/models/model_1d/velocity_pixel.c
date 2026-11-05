@@ -68,7 +68,7 @@ static float F_M(const Model1DDataT *data, float S, float m)
     return data->FM[data->stateMap[SIndex][mIndex]];
 }
 
-const VelocityFieldT VelocityPixel = {
+const VelocityFieldT model1d_VelocityPixel = {
     .init = init,
     .F_S  = F_S,
     .F_X  = F_X,

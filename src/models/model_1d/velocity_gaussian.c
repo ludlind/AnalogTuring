@@ -135,7 +135,7 @@ static float F_M(const Model1DDataT *data, float S, float m)
     return result;
 }
 
-const VelocityFieldT VelocityGaussian = {
+const VelocityFieldT model1d_VelocityGaussian = {
     .init = init,
     .F_S  = F_S,
     .F_X  = F_X,

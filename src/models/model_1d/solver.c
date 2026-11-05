@@ -6,7 +6,7 @@
 #include "lib/util.h"
 #include "models/model_1d/solver.h"
 
-float periodicMemoryDistance(float a, float b)
+float model1d_periodicMemoryDistance(float a, float b)
 {
     float L = MEMORY_GRID_POINTS * MEMORY_GRID_SIZE;
     float d = a - b;
@@ -20,7 +20,7 @@ static float memoryWriteProfile(const Model1DDataT *data, float dx)
     return gaussian(dx, data->state.sigma_M);
 }
 
-float getMemoryStartTime(const Model1DDataT *data)
+float model1d_getMemoryStartTime(const Model1DDataT *data)
 {
     return data->memory.currentMemTime - (TIME_MEMORY_GRID_POINTS-1)*data->state.dt;
 }
@@ -30,7 +30,7 @@ static float getMemoryBufferStartTime(const Model1DDataT *data)
     return data->memory.currentMemTime - (data->memory.currentMemIndex-1)*data->state.dt;
 }
 
-float interpM(const Model1DDataT *data, float x)
+float model1d_interpM(const Model1DDataT *data, float x)
 {
     float min = MEMORY_START_POSITION;
     float max = MEMORY_STOP_POSITION;
@@ -50,7 +50,7 @@ float interpM(const Model1DDataT *data, float x)
 
 static float interpHistory(const Model1DDataT *data, const float *history, float t)
 {
-    float tStart = getMemoryStartTime(data);
+    float tStart = model1d_getMemoryStartTime(data);
     if (t > data->memory.currentMemTime || t < tStart)
     {
         return 0.0f;
@@ -68,28 +68,28 @@ static float interpHistory(const Model1DDataT *data, const float *history, float
     return (1.0f - w)*history[i1] + w*history[i2];
 }
 
-float interpS(const Model1DDataT *data, float t)
+float model1d_interpS(const Model1DDataT *data, float t)
 {
     return interpHistory(data, data->memory.SMem, t);
 }
 
-float interpX(const Model1DDataT *data, float t)
+float model1d_interpX(const Model1DDataT *data, float t)
 {
     return interpHistory(data, data->memory.XMem, t);
 }
 
-float interpm(const Model1DDataT *data, float t)
+float model1d_interpm(const Model1DDataT *data, float t)
 {
     return interpHistory(data, data->memory.mMem, t);
 }
 
-void allocState(Model1DDataT *data)
+void model1d_allocState(Model1DDataT *data)
 {
     data->state.M = (float *) malloc(MEMORY_GRID_POINTS * sizeof(float));
     data->state.Mnext = (float *) malloc(MEMORY_GRID_POINTS * sizeof(float));
 }
 
-void resetState(Model1DDataT *data)
+void model1d_resetState(Model1DDataT *data)
 {
     StateT *state = &data->state;
     MemoryT *memory = &data->memory;
@@ -118,7 +118,7 @@ void resetState(Model1DDataT *data)
     }
 }
 
-void stepState(Model1DDataT *data)
+void model1d_stepState(Model1DDataT *data)
 {
     StateT *state = &data->state;
     MemoryT *memory = &data->memory;
@@ -139,7 +139,7 @@ void stepState(Model1DDataT *data)
     for (int i = 0; i < MEMORY_GRID_POINTS; i++)
     {
         float x = i*MEMORY_GRID_SIZE + MEMORY_GRID_OFFSET;
-        float dx = periodicMemoryDistance(x, state->X);
+        float dx = model1d_periodicMemoryDistance(x, state->X);
         float M = state->M[i] + A * memoryWriteProfile(data, dx) * state->dt;
         state->Mnext[i] = clamp(M, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE);
     }
@@ -151,7 +151,7 @@ void stepState(Model1DDataT *data)
     state->Mnext = Mprev;
     state->S = S;
     state->X = X;
-    state->m = interpM(data, X);
+    state->m = model1d_interpM(data, X);
     state->t += state->dt;
 
     // STATE MEMORY
@@ -169,7 +169,7 @@ void stepState(Model1DDataT *data)
     memory->currentMemTime = state->t;
 }
 
-void freeState(Model1DDataT *data)
+void model1d_freeState(Model1DDataT *data)
 {
     free(data->state.M);
     free(data->state.Mnext);

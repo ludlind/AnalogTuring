@@ -3,15 +3,15 @@
 
 #include "models/model_1d/model.h"
 
-float periodicMemoryDistance(float a, float b);
-float getMemoryStartTime(const Model1DDataT *data);
-float interpM(const Model1DDataT *data, float x);
-float interpS(const Model1DDataT *data, float t);
-float interpX(const Model1DDataT *data, float t);
-float interpm(const Model1DDataT *data, float t);
-void allocState(Model1DDataT *data);
-void resetState(Model1DDataT *data);
-void stepState(Model1DDataT *data);
-void freeState(Model1DDataT *data);
+float model1d_periodicMemoryDistance(float a, float b);
+float model1d_getMemoryStartTime(const Model1DDataT *data);
+float model1d_interpM(const Model1DDataT *data, float x);
+float model1d_interpS(const Model1DDataT *data, float t);
+float model1d_interpX(const Model1DDataT *data, float t);
+float model1d_interpm(const Model1DDataT *data, float t);
+void model1d_allocState(Model1DDataT *data);
+void model1d_resetState(Model1DDataT *data);
+void model1d_stepState(Model1DDataT *data);
+void model1d_freeState(Model1DDataT *data);
 
 #endif

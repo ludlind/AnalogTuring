@@ -20,10 +20,10 @@ static void *createWith(const VelocityFieldT *velocity, const ParametersT *runti
     }
 
     data->initM = calloc(MEMORY_GRID_POINTS, sizeof(float));
-    allocState(data);
+    model1d_allocState(data);
     if (data->initM == NULL || data->state.M == NULL || data->state.Mnext == NULL)
     {
-        freeState(data);
+        model1d_freeState(data);
         free(data->initM);
         free(data);
         return NULL;
@@ -36,37 +36,37 @@ static void *createWith(const VelocityFieldT *velocity, const ParametersT *runti
     data->brushSize = -3.0f;
 
     velocity->init(data);
-    resetState(data);
+    model1d_resetState(data);
 
     return data;
 }
 
 static void *createConstant(const ParametersT *runtime)
 {
-    return createWith(&VelocityConstant, runtime);
+    return createWith(&model1d_VelocityConstant, runtime);
 }
 
 static void *createGaussian(const ParametersT *runtime)
 {
-    return createWith(&VelocityGaussian, runtime);
+    return createWith(&model1d_VelocityGaussian, runtime);
 }
 
 static void *createPixel(const ParametersT *runtime)
 {
-    return createWith(&VelocityPixel, runtime);
+    return createWith(&model1d_VelocityPixel, runtime);
 }
 
 static void destroy(void *data)
 {
     Model1DDataT *d = model1d_of(data);
-    freeState(d);
+    model1d_freeState(d);
     free(d->initM);
     free(d);
 }
 
 static void stepModel(void *data)
 {
-    stepState(model1d_of(data));
+    model1d_stepState(model1d_of(data));
 }
 
 static void updateSimulationPanel(void *data)
@@ -75,7 +75,7 @@ static void updateSimulationPanel(void *data)
 
     if (IsKeyPressed(KEY_R))
     {
-        resetState(d);
+        model1d_resetState(d);
     }
 
     runWithinBudget(d->runtime, stepModel, d);
@@ -86,13 +86,13 @@ static void addPanels(void *data, PanelListT *panels)
     addPanel(panels, (PanelT){
         .name = "Simulation",
         .update = updateSimulationPanel,
-        .draw = DrawSimulationView,
+        .draw = model1d_DrawSimulationView,
         .ctx = data,
     });
     addPanel(panels, (PanelT){
         .name = "Edit",
-        .update = HandleInputEditView,
-        .draw = DrawEditView,
+        .update = model1d_HandleInputEditView,
+        .draw = model1d_DrawEditView,
         .ctx = data,
     });
 }
