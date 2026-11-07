@@ -6,10 +6,19 @@
 #include "models/model_2d/solver.h"
 #include "models/model_2d/simview.h"
 
+#define FIELD_MIN -1.0f
+#define FIELD_MAX  1.0f
+
+static Rectangle FSPolarGr  = { 65, 60, 220, 220 };
+static Rectangle FSColorBar = { 293, 60, 12, 220 };
+static Rectangle FMPolarGr  = { 385, 60, 220, 220 };
+static Rectangle FMColorBar = { 613, 60, 12, 220 };
+static Rectangle FXPolarGr  = { 705, 60, 220, 220 };
+static Rectangle FXColorBar = { 933, 60, 12, 220 };
 static Rectangle SHistoryGr = { 65, 380, 220, 200 };
 static Rectangle SColorBar  = { 293, 380, 12, 200 };
-static Rectangle XHistoryGr = { 385, 380, 260, 200 };
-static Rectangle mHistoryGr = { 705, 380, 260, 200 };
+static Rectangle XHistoryGr = { 385, 380, 220, 200 };
+static Rectangle mHistoryGr = { 705, 380, 220, 200 };
 
 static const Color phaseMarkColor = { 200, 200, 200, 120 };
 
@@ -29,10 +38,27 @@ static const PlotAxesT mHistoryAxes = {
     .hideXGrid = true,
 };
 
-static Color angleColor(float angle)
+static float complex plotFS(const void *ctx, float complex S)
 {
-    float hue = (angle + PI)/(2.0f*PI)*360.0f;
-    return ColorFromHSV(hue, 0.8f, 1.0f);
+    const Model2DDataT *d = ctx;
+    return d->velocity->F_S(d, S, d->state.m, d->state.theta);
+}
+
+static float plotFM(const void *ctx, float complex S)
+{
+    const Model2DDataT *d = ctx;
+    return d->velocity->F_M(d, S, d->state.m, d->state.theta);
+}
+
+static float plotFX(const void *ctx, float complex S)
+{
+    const Model2DDataT *d = ctx;
+    return d->velocity->F_X(d, S, d->state.m, d->state.theta);
+}
+
+static Color fieldColor(float v)
+{
+    return ColorMap((v - FIELD_MIN)/(FIELD_MAX - FIELD_MIN));
 }
 
 static float plotSAbsHistory(const void *ctx, float t)
@@ -42,7 +68,7 @@ static float plotSAbsHistory(const void *ctx, float t)
 
 static Color plotSArgHistory(const void *ctx, float t)
 {
-    return angleColor(cargf(model2d_interpS(ctx, t)));
+    return ColorAngle(cargf(model2d_interpS(ctx, t)));
 }
 
 static float plotXHistory(const void *ctx, float t)
@@ -91,7 +117,19 @@ void model2d_DrawSimulationView(void *data)
     PlotAxesT mAxes = withTimeRange(mHistoryAxes, t1, t2);
 
     DrawColoredScope(SHistoryGr, 2, plotSAbsHistory, plotSArgHistory, d, SAxes);
-    DrawColorBar(SColorBar, 1, angleColor, "arg S", -PI, PI);
+    DrawPolarMap(FSPolarGr, 20, 64, plotFS, d, "F_S(S; theta, m)", STATE_MAX_RADIUS, 1.0f);
+    DrawPolarDot(FSPolarGr, STATE_MAX_RADIUS, d->state.S, RAYWHITE);
+    DrawColorBar(FSColorBar, 1, ColorAngle, "arg F_S", -PI, PI);
+
+    DrawPolarScalarMap(FMPolarGr, 20, 64, plotFM, d, "F_M(S; theta, m)", STATE_MAX_RADIUS, FIELD_MIN, FIELD_MAX);
+    DrawPolarDot(FMPolarGr, STATE_MAX_RADIUS, d->state.S, RAYWHITE);
+    DrawColorBar(FMColorBar, 1, fieldColor, "F_M", FIELD_MIN, FIELD_MAX);
+
+    DrawPolarScalarMap(FXPolarGr, 20, 64, plotFX, d, "F_X(S; theta, m)", STATE_MAX_RADIUS, FIELD_MIN, FIELD_MAX);
+    DrawPolarDot(FXPolarGr, STATE_MAX_RADIUS, d->state.S, RAYWHITE);
+    DrawColorBar(FXColorBar, 1, fieldColor, "F_X", FIELD_MIN, FIELD_MAX);
+
+    DrawColorBar(SColorBar, 1, ColorAngle, "arg S", -PI, PI);
     DrawScope(XHistoryGr, 2, plotXHistory, d, XAxes);
     DrawScope(mHistoryGr, 2, plotmHistory, d, mAxes);
 

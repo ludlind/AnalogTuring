@@ -1,10 +1,13 @@
 #ifndef __VISUAL_H
 #define __VISUAL_H
 
+#include <complex.h>
 #include <raylib.h>
 #include "common.h"
 
 typedef float (*MapFunc)(const void *ctx, float x, float y);
+typedef float complex (*ComplexMapFunc)(const void *ctx, float complex z);
+typedef float (*PolarScalarFunc)(const void *ctx, float complex z);
 typedef float (*ScopeFunc)(const void *ctx, float x);
 typedef Color (*ScopeColorFunc)(const void *ctx, float x);
 typedef Color (*ColorFunc)(float v);
@@ -19,6 +22,16 @@ typedef struct PlotAxesS {
 } PlotAxesT;
 
 Color ColorMap(float v);
+Color ColorAngle(float angle);
+void DrawPolarMap(Rectangle rect, int rings, int sectors,
+                  ComplexMapFunc map, const void *ctx,
+                  const char *title, float radius, float scale);
+void DrawPolarScalarMap(Rectangle rect, int rings, int sectors,
+                        PolarScalarFunc map, const void *ctx,
+                        const char *title, float radius,
+                        float zmin, float zmax);
+void DrawPolarDot(Rectangle rect, float radius,
+                  float complex z, Color color);
 void DrawMap(Rectangle rect, int cellSize,
              int lineThickness, int colorMap,
              MapFunc map, const void *ctx,

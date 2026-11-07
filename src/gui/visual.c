@@ -70,6 +70,11 @@ Color (*ColorMaps[NUM_OF_COLORMAPS])(float) = {
     ColorMap1,
 };
 
+Color ColorMap(float v)
+{
+    return ColorMap1(clamp(v, 0.0f, 1.0f));
+}
+
 void DrawMap(Rectangle rect, int cellSize,
              int lineThickness, int colorMap,
              MapFunc map, const void *ctx,
@@ -229,6 +234,160 @@ void DrawColorBar(Rectangle rect, int lineThickness,
         DrawText(label, rect.x + (rect.width - w)/2, rect.y - AXIS_FONT_SIZE - 4,
                  AXIS_FONT_SIZE, RAYWHITE);
     }
+}
+
+Color ColorAngle(float angle)
+{
+    float hue = (angle + PI)/(2.0f*PI)*360.0f;
+    return ColorFromHSV(hue, 0.8f, 1.0f);
+}
+
+static Vector2 polarCenter(Rectangle rect)
+{
+    return (Vector2){ rect.x + rect.width/2.0f, rect.y + rect.height/2.0f };
+}
+
+static float polarPixelRadius(Rectangle rect)
+{
+    return fminf(rect.width, rect.height)/2.0f;
+}
+
+static Vector2 polarToScreen(Rectangle rect, float radius, float complex z)
+{
+    Vector2 c = polarCenter(rect);
+    float R = polarPixelRadius(rect);
+    return (Vector2){ c.x + crealf(z)/radius*R, c.y - cimagf(z)/radius*R };
+}
+
+static void drawCenteredText(const char *text, Vector2 p, int fontSize, Color color)
+{
+    int w = MeasureText(text, fontSize);
+    DrawText(text, p.x - w/2.0f, p.y - fontSize/2.0f, fontSize, color);
+}
+
+static void drawPolarGuides(Rectangle rect, float radius)
+{
+    Vector2 c = polarCenter(rect);
+    float R = polarPixelRadius(rect);
+    Color guide = { 255, 255, 255, 60 };
+
+    for (int i = 1; i < 4; i++)
+    {
+        DrawCircleLinesV(c, R*i/4.0f, guide);
+    }
+    for (int i = 0; i < 8; i++)
+    {
+        float a = i*PI/4.0f;
+        DrawLineV(c, (Vector2){ c.x + R*cosf(a), c.y - R*sinf(a) }, guide);
+    }
+    DrawRing(c, R, R + 2, 0.0f, 360.0f, 128, RAYWHITE);
+
+    static const char *angleLabels[] = { "pi/2", "pi", "-pi/2" };
+    float labelR = R + 4 + AXIS_FONT_SIZE/2.0f;
+    for (int i = 0; i < 3; i++)
+    {
+        float a = (i + 1)*PI/2.0f;
+        Vector2 p = { c.x + labelR*cosf(a), c.y - labelR*sinf(a) };
+        if (i == 1) p.x -= MeasureText(angleLabels[i], AXIS_FONT_SIZE)/2.0f;
+        drawCenteredText(angleLabels[i], p, AXIS_FONT_SIZE, AXIS_COLOR);
+    }
+
+    DrawText(TextFormat("%.3g", 0.5f*radius), c.x + R/2.0f + 2, c.y + 2, AXIS_FONT_SIZE, AXIS_COLOR);
+    DrawText(TextFormat("%.3g", radius), c.x + R - MeasureText(TextFormat("%.3g", radius), AXIS_FONT_SIZE) - 2,
+             c.y + 2, AXIS_FONT_SIZE, AXIS_COLOR);
+}
+
+typedef Color (*PolarCellColorFunc)(const void *cellCtx, float complex z);
+
+typedef struct ComplexCellS {
+    ComplexMapFunc map;
+    const void *ctx;
+    float scale;
+} ComplexCellT;
+
+typedef struct ScalarCellS {
+    PolarScalarFunc map;
+    const void *ctx;
+    float zmin, zmax;
+} ScalarCellT;
+
+static Color complexCellColor(const void *cellCtx, float complex z)
+{
+    const ComplexCellT *cell = cellCtx;
+    float complex F = cell->map(cell->ctx, z);
+
+    Color color = ColorAngle(cargf(F));
+    float brightness = 1.0f - expf(-cabsf(F)/cell->scale);
+    return ColorBrightness(color, brightness - 1.0f);
+}
+
+static Color scalarCellColor(const void *cellCtx, float complex z)
+{
+    const ScalarCellT *cell = cellCtx;
+    float v = cell->map(cell->ctx, z);
+    return ColorMap((v - cell->zmin)/(cell->zmax - cell->zmin));
+}
+
+static void drawPolar(Rectangle rect, int rings, int sectors,
+                      PolarCellColorFunc cellColor, const void *cellCtx,
+                      const char *title, float radius)
+{
+    Vector2 c = polarCenter(rect);
+    float R = polarPixelRadius(rect);
+    float sectorDeg = 360.0f/sectors;
+
+    for (int i = 0; i < rings; i++)
+    {
+        float r0 = R*i/rings;
+        float r1 = R*(i + 1)/rings;
+        float r = radius*(i + 0.5f)/rings;
+
+        for (int j = 0; j < sectors; j++)
+        {
+            float a = -PI + (j + 0.5f)*2.0f*PI/sectors;
+            Color color = cellColor(cellCtx, r*cexpf(I*a));
+
+            float a0 = -180.0f + j*sectorDeg;
+            DrawRing(c, r0, r1, -(a0 + sectorDeg), -a0, 2, color);
+        }
+    }
+
+    drawPolarGuides(rect, radius);
+
+    if (title)
+    {
+        int w = MeasureText(title, TITLE_FONT_SIZE);
+        DrawText(title, rect.x + (rect.width - w)/2,
+                 rect.y - AXIS_FONT_SIZE - 8 - TITLE_FONT_SIZE,
+                 TITLE_FONT_SIZE, RAYWHITE);
+    }
+}
+
+void DrawPolarMap(Rectangle rect, int rings, int sectors,
+                  ComplexMapFunc map, const void *ctx,
+                  const char *title, float radius, float scale)
+{
+    ComplexCellT cell = { map, ctx, scale };
+    drawPolar(rect, rings, sectors, complexCellColor, &cell, title, radius);
+}
+
+void DrawPolarScalarMap(Rectangle rect, int rings, int sectors,
+                        PolarScalarFunc map, const void *ctx,
+                        const char *title, float radius,
+                        float zmin, float zmax)
+{
+    ScalarCellT cell = { map, ctx, zmin, zmax };
+    drawPolar(rect, rings, sectors, scalarCellColor, &cell, title, radius);
+}
+
+void DrawPolarDot(Rectangle rect, float radius,
+                  float complex z, Color color)
+{
+    if (cabsf(z) > radius)
+    {
+        return;
+    }
+    DrawCircleV(polarToScreen(rect, radius, z), 3.0f, color);
 }
 
 void DrawDot(Rectangle map, int margin,
