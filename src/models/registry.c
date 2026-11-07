@@ -5,11 +5,13 @@
 extern const ModelT Model1DGaussian;
 extern const ModelT Model1DPixel;
 extern const ModelT Model2DConstant;
+extern const ModelT Model2DKeyframe;
 
 static const ModelT *const models[] = {
     &Model1DGaussian,
     &Model1DPixel,
     &Model2DConstant,
+    &Model2DKeyframe,
 };
 
 int getModelCount(void)

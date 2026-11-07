@@ -209,6 +209,21 @@ void DrawVerticalLine(Rectangle rect, int lineThickness,
     DrawLine(px, inner.y, px, inner.y + inner.height, color);
 }
 
+void DrawHorizontalLine(Rectangle rect, int lineThickness,
+                        float y,
+                        PlotAxesT axes,
+                        Color color)
+{
+    if (y < axes.ymin || y > axes.ymax || axes.ymax <= axes.ymin)
+    {
+        return;
+    }
+
+    Rectangle inner = innerRect(rect, lineThickness);
+    float py = inner.y + inner.height - (y - axes.ymin)/(axes.ymax - axes.ymin)*inner.height;
+    DrawLine(inner.x, py, inner.x + inner.width, py, color);
+}
+
 void DrawColorBar(Rectangle rect, int lineThickness,
                   ColorFunc color,
                   const char *label,
@@ -418,6 +433,26 @@ void DrawPolarDot(Rectangle rect, float radius,
         return;
     }
     DrawCircleV(polarToScreen(rect, radius, z), 3.0f, color);
+}
+
+void DrawPolarRing(Rectangle rect, float radius,
+                   float complex center, float r, Color color)
+{
+    DrawCircleLinesV(polarToScreen(rect, radius, center), r*PolarPixelsPerUnit(rect, radius), color);
+}
+
+bool PolarScreenToValue(Rectangle rect, float radius,
+                        Vector2 p, float complex *z)
+{
+    Vector2 c = polarCenter(rect);
+    float scale = PolarPixelsPerUnit(rect, radius);
+    *z = (p.x - c.x)/scale + I*(c.y - p.y)/scale;
+    return cabsf(*z) <= radius;
+}
+
+float PolarPixelsPerUnit(Rectangle rect, float radius)
+{
+    return polarPixelRadius(rect)/radius;
 }
 
 void DrawDot(Rectangle map, int margin,

@@ -37,6 +37,11 @@ void DrawPolarScalarMap(Rectangle rect, int rings, int sectors,
                         float zmin, float zmax);
 void DrawPolarDot(Rectangle rect, float radius,
                   float complex z, Color color);
+void DrawPolarRing(Rectangle rect, float radius,
+                   float complex center, float r, Color color);
+bool PolarScreenToValue(Rectangle rect, float radius,
+                        Vector2 p, float complex *z);
+float PolarPixelsPerUnit(Rectangle rect, float radius);
 void DrawMap(Rectangle rect, int cellSize,
              int lineThickness, int colorMap,
              MapFunc map, const void *ctx,
@@ -55,6 +60,10 @@ void DrawVerticalLine(Rectangle rect, int lineThickness,
                       float x,
                       PlotAxesT axes,
                       Color color);
+void DrawHorizontalLine(Rectangle rect, int lineThickness,
+                        float y,
+                        PlotAxesT axes,
+                        Color color);
 void DrawColorBar(Rectangle rect, int lineThickness,
                   ColorFunc color,
                   const char *label,

@@ -8,7 +8,10 @@
 #include "models/model_2d/solver.h"
 #include "models/model_2d/simview.h"
 #include "models/model_2d/sliceview.h"
+#include "models/model_2d/editview.h"
+#include "models/model_2d/inputview.h"
 #include "models/model_2d/velocity_constant.h"
+#include "models/model_2d/velocity_keyframe.h"
 
 static void *createWith(const VelocityField2DT *velocity, const ParametersT *runtime)
 {
@@ -35,6 +38,8 @@ static void *createWith(const VelocityField2DT *velocity, const ParametersT *run
     data->parameters.omega = 2.0f*PI;
 
     model2d_InitSliceView(&data->slice);
+    model2d_InitKeyframeEdit(&data->edit);
+    model2d_InitInputView(&data->input);
 
     velocity->init(data);
     model2d_resetState(data);
@@ -45,6 +50,11 @@ static void *createWith(const VelocityField2DT *velocity, const ParametersT *run
 static void *createConstant(const ParametersT *runtime)
 {
     return createWith(&model2d_VelocityConstant, runtime);
+}
+
+static void *createKeyframe(const ParametersT *runtime)
+{
+    return createWith(&model2d_VelocityKeyframe, runtime);
 }
 
 static void destroy(void *data)
@@ -104,6 +114,23 @@ static void addPanels(void *data, PanelListT *panels)
         .draw = model2d_DrawSliceView,
         .ctx = data,
     });
+    addPanel(panels, (PanelT){
+        .name = "Input",
+        .update = model2d_HandleInputInputView,
+        .draw = model2d_DrawInputView,
+        .ctx = data,
+    });
+}
+
+static void addKeyframePanels(void *data, PanelListT *panels)
+{
+    addPanels(data, panels);
+    addPanel(panels, (PanelT){
+        .name = "Edit",
+        .update = model2d_HandleInputEditView,
+        .draw = model2d_DrawEditView,
+        .ctx = data,
+    });
 }
 
 const ModelT Model2DConstant = {
@@ -111,4 +138,11 @@ const ModelT Model2DConstant = {
     .create = createConstant,
     .destroy = destroy,
     .addPanels = addPanels,
+};
+
+const ModelT Model2DKeyframe = {
+    .name = "2D Keyframe",
+    .create = createKeyframe,
+    .destroy = destroy,
+    .addPanels = addKeyframePanels,
 };

@@ -42,15 +42,15 @@ static const SliceVarInfoT varInfo[SLICE_VAR_COUNT] = {
 };
 
 static const char *fieldNames[] = {
-    [SLICE_F_S] = "F_S",
-    [SLICE_F_M] = "F_M",
-    [SLICE_F_X] = "F_X",
+    [FIELD_F_S] = "F_S",
+    [FIELD_F_M] = "F_M",
+    [FIELD_F_X] = "F_X",
 };
 
 static const char *fieldTitles[] = {
-    [SLICE_F_S] = "F_S slice",
-    [SLICE_F_M] = "F_M slice",
-    [SLICE_F_X] = "F_X slice",
+    [FIELD_F_S] = "F_S slice",
+    [FIELD_F_M] = "F_M slice",
+    [FIELD_F_X] = "F_X slice",
 };
 
 static bool isSVar(int v)
@@ -145,7 +145,7 @@ static float sliceScalar(const void *ctx, float x, float y)
     {
         return NAN;
     }
-    if (d->slice.field == SLICE_F_M)
+    if (d->slice.field == FIELD_F_M)
     {
         return d->velocity->F_M(d, S, m, theta);
     }
@@ -264,7 +264,7 @@ void model2d_InitSliceView(SliceViewT *slice)
 {
     slice->xAxis = SLICE_RE_S;
     slice->yAxis = SLICE_IM_S;
-    slice->field = SLICE_F_S;
+    slice->field = FIELD_F_S;
     slice->polarSliders = 1;
     slice->follow = false;
     for (int v = 0; v < SLICE_VAR_COUNT; v++)
@@ -287,7 +287,7 @@ void model2d_DrawSliceView(void *data)
         false,
     };
 
-    if (slice->field == SLICE_F_S)
+    if (slice->field == FIELD_F_S)
     {
         DrawComplexMap(sliceMap, 6, 2, sliceFS, d, axes, 1.0f);
         DrawColorBar(sliceColorBar, 1, ColorAngle, "arg F_S", -PI, PI);

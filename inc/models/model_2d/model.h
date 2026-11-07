@@ -25,6 +25,11 @@
 
 #define TIME_MEMORY_GRID_POINTS 10001
 
+#define MAX_KEYFRAMES             16
+#define MAX_SYMBOLS               8
+#define NUMBER_OF_SPLAT_FUNCTIONS 8
+#define MAX_SPLATS                32
+
 typedef struct State2DS {
     float complex S;
     float theta;
@@ -58,11 +63,48 @@ typedef enum SliceVarE {
     SLICE_VAR_COUNT,
 } SliceVarT;
 
-typedef enum SliceFieldE {
-    SLICE_F_S,
-    SLICE_F_M,
-    SLICE_F_X,
-} SliceFieldT;
+typedef enum FieldComponentE {
+    FIELD_F_S,
+    FIELD_F_M,
+    FIELD_F_X,
+    FIELD_COMPONENT_COUNT,
+} FieldComponentT;
+
+typedef struct SplatS {
+    float complex center;
+    float sigma;
+    float complex value;
+    float complex alpha;
+    float complex beta;
+} SplatT;
+
+typedef struct SplatListS {
+    int count;
+    SplatT splats[MAX_SPLATS];
+} SplatListT;
+
+typedef struct SplatFunctionS {
+    SplatListT components[FIELD_COMPONENT_COUNT];
+} SplatFunctionT;
+
+typedef struct KeyframeProgramS {
+    int keyframes;
+    int symbols;
+    int index[MAX_KEYFRAMES][MAX_SYMBOLS];
+    SplatFunctionT functions[NUMBER_OF_SPLAT_FUNCTIONS];
+} KeyframeProgramT;
+
+typedef struct KeyframeEditS {
+    int    selectedFunction;
+    int    component;
+    int    selectedSplat;
+    bool   dragging;
+    SplatT brush[FIELD_COMPONENT_COUNT];
+} KeyframeEditT;
+
+typedef struct InputViewS {
+    float brushSize;
+} InputViewT;
 
 typedef struct SliceViewS {
     int   xAxis;
@@ -98,6 +140,10 @@ struct Model2DDataS {
 
     float *initM;
     float complex startS;
+
+    KeyframeProgramT program;
+    KeyframeEditT    edit;
+    InputViewT       input;
 
     SliceViewT slice;
 };
