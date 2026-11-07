@@ -2,23 +2,12 @@
 #include <complex.h>
 #include <raylib.h>
 
-#include "gui/raygui.h"
 #include "gui/visual.h"
 #include "models/model_2d/keyframe_program.h"
 #include "models/model_2d/tape.h"
 #include "models/model_2d/inputview.h"
 
-#define LABEL_X       80
-#define SLIDER_X      240
-#define SLIDER_WIDTH  300
-#define ROW_HEIGHT    20
-
 static Rectangle tapeMap      = { 80, 80, 860, 300 };
-static Rectangle dtSlider     = { SLIDER_X, 460, SLIDER_WIDTH, ROW_HEIGHT };
-static Rectangle sigmaMSlider = { SLIDER_X, 495, SLIDER_WIDTH, ROW_HEIGHT };
-static Rectangle omegaSlider  = { SLIDER_X, 530, SLIDER_WIDTH, ROW_HEIGHT };
-static Rectangle startReSlider = { SLIDER_X, 565, SLIDER_WIDTH, ROW_HEIGHT };
-static Rectangle startImSlider = { SLIDER_X, 600, SLIDER_WIDTH, ROW_HEIGHT };
 
 static const Color symbolLineColor = { 255, 200, 80, 110 };
 static const Color brushColor      = { 255, 255, 255, 140 };
@@ -50,38 +39,6 @@ static float tapePosition(float u)
     return tapeAxes.xmin + u*(tapeAxes.xmax - tapeAxes.xmin);
 }
 
-static void drawLabel(const char *text, Rectangle row)
-{
-    DrawText(text, LABEL_X, row.y + 2, 16, LIGHTGRAY);
-}
-
-static void drawParameters(Model2DDataT *d)
-{
-    Model2DParametersT *p = &d->parameters;
-
-    float logDt = log10f(p->dt);
-    float logSigmaM = log10f(p->sigma_M);
-    float startRe = crealf(d->startS);
-    float startIm = cimagf(d->startS);
-
-    drawLabel("dt (log)", dtSlider);
-    GuiSlider(dtSlider, NULL, TextFormat("%0.2f", logDt), &logDt, -6.0f, -1.0f);
-    drawLabel("sigma_M (log)", sigmaMSlider);
-    GuiSlider(sigmaMSlider, NULL, TextFormat("%0.2f", logSigmaM), &logSigmaM, -4.0f, 0.0f);
-    drawLabel("omega", omegaSlider);
-    GuiSlider(omegaSlider, NULL, TextFormat("%0.2f", p->omega), &p->omega, 0.0f, 4.0f*PI);
-    drawLabel("S_start Re", startReSlider);
-    GuiSlider(startReSlider, NULL, TextFormat("%0.2f", startRe), &startRe, -STATE_MAX_RADIUS, STATE_MAX_RADIUS);
-    drawLabel("S_start Im", startImSlider);
-    GuiSlider(startImSlider, NULL, TextFormat("%0.2f", startIm), &startIm, -STATE_MAX_RADIUS, STATE_MAX_RADIUS);
-
-    p->dt = powf(10.0f, logDt);
-    p->sigma_M = powf(10.0f, logSigmaM);
-    d->startS = startRe + I*startIm;
-
-    DrawText("Parameters take effect on reset (R in Simulation or Slice)", LABEL_X, 645, 16, GRAY);
-}
-
 void model2d_InitInputView(InputViewT *input)
 {
     input->brushSize = -3.0f;
@@ -110,7 +67,6 @@ void model2d_DrawInputView(void *data)
     DrawText("Drag: paint (above/below middle adds/removes)   Wheel: brush width",
              tapeMap.x, tapeMap.y + tapeMap.height + 30, 16, GRAY);
 
-    drawParameters(d);
 }
 
 void model2d_HandleInputInputView(void *data)

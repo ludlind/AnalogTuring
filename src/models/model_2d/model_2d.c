@@ -10,6 +10,7 @@
 #include "models/model_2d/sliceview.h"
 #include "models/model_2d/editview.h"
 #include "models/model_2d/inputview.h"
+#include "models/model_2d/parameterview.h"
 #include "models/model_2d/velocity_constant.h"
 #include "models/model_2d/velocity_keyframe.h"
 
@@ -118,6 +119,12 @@ static void addPanels(void *data, PanelListT *panels)
         .name = "Input",
         .update = model2d_HandleInputInputView,
         .draw = model2d_DrawInputView,
+        .ctx = data,
+    });
+    addPanel(panels, (PanelT){
+        .name = "Parameters",
+        .update = model2d_HandleInputParameterView,
+        .draw = model2d_DrawParameterView,
         .ctx = data,
     });
 }

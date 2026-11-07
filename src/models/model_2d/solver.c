@@ -133,10 +133,10 @@ void model2d_resetState(Model2DDataT *data)
     State2DT *state = &data->state;
     Memory2DT *memory = &data->memory;
 
-    state->S = clampToDisk(data->startS, STATE_MAX_RADIUS);
-    state->theta = 0.0f;
-    state->X = 0.0f;
-    state->m = 0.0f;
+    state->S = clampToDisk(data->parameters.startS, STATE_MAX_RADIUS);
+    state->theta = wrapf(data->parameters.startTheta, 0.0f, 2.0f*PI);
+    state->X = data->parameters.startX;
+    state->m = data->parameters.startm;
     state->sigma_M = data->parameters.sigma_M;
     state->omega = data->parameters.omega;
     state->dt = data->parameters.dt;

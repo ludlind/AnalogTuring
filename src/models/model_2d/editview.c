@@ -1,10 +1,10 @@
 #include <math.h>
 #include <complex.h>
-#include <stdio.h>
 #include <raylib.h>
 
 #include "gui/raygui.h"
 #include "gui/visual.h"
+#include "gui/valuerow.h"
 #include "lib/util.h"
 #include "models/model_2d/keyframe_program.h"
 #include "models/model_2d/editview.h"
@@ -21,12 +21,7 @@
 #define CONTROL_WIDTH 200
 #define ROW_HEIGHT    20
 
-#define PARAM_Y         190
-#define PARAM_SPACING   28
-#define PARAM_SLIDER_W  130
-#define PARAM_BOX_X     (CONTROL_X + PARAM_SLIDER_W + 10)
-#define PARAM_BOX_W     60
-#define PARAM_ROWS      9
+#define PARAM_ROWS    9
 
 static Rectangle splatMap       = { 80, 80, 300, 300 };
 static Rectangle splatColorBar  = { 400, 80, 12, 300 };
@@ -48,12 +43,17 @@ static const Color functionColors[NUMBER_OF_SPLAT_FUNCTIONS] = {
     { 211, 176, 131, 255 },
 };
 
-typedef struct ValueBoxS {
-    char text[33];
-    bool editing;
-} ValueBoxT;
-
 static ValueBoxT paramBoxes[PARAM_ROWS];
+
+static const ValueRowLayoutT paramLayout = {
+    .labelX = LABEL_X,
+    .sliderX = CONTROL_X,
+    .sliderWidth = 130,
+    .boxWidth = 60,
+    .y = 190,
+    .spacing = 28,
+    .height = ROW_HEIGHT,
+};
 
 static const char *componentTitles[] = {
     [FIELD_F_S] = "F_S splats",
@@ -86,18 +86,6 @@ static float complex clampToDisk(float complex z)
         return z*(STATE_MAX_RADIUS/r);
     }
     return z;
-}
-
-static bool anyBoxEditing(void)
-{
-    for (int row = 0; row < PARAM_ROWS; row++)
-    {
-        if (paramBoxes[row].editing)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 static float complex plotSplatsComplex(const void *ctx, float complex S)
@@ -148,22 +136,7 @@ static void drawSplatMarkers(const SplatListT *list, int selected)
 
 static void paramRow(int row, const char *label, float *value, float min, float max)
 {
-    float y = PARAM_Y + row*PARAM_SPACING;
-    Rectangle slider = { CONTROL_X, y, PARAM_SLIDER_W, ROW_HEIGHT };
-    Rectangle bounds = { PARAM_BOX_X, y, PARAM_BOX_W, ROW_HEIGHT };
-    ValueBoxT *box = &paramBoxes[row];
-
-    DrawText(label, LABEL_X, y + 2, 16, LIGHTGRAY);
-    GuiSlider(slider, NULL, NULL, value, min, max);
-
-    if (!box->editing)
-    {
-        snprintf(box->text, sizeof(box->text), "%.3f", *value);
-    }
-    if (GuiValueBoxFloat(bounds, NULL, box->text, value, box->editing))
-    {
-        box->editing = !box->editing;
-    }
+    DrawValueRow(&paramLayout, row, &paramBoxes[row], label, value, min, max);
 }
 
 static int linearControls(int row, SplatT *target)
@@ -457,7 +430,7 @@ void model2d_HandleInputEditView(void *data)
         splat->sigma = clamp(splat->sigma*powf(SIGMA_WHEEL_STEP, wheel), SIGMA_MIN, SIGMA_MAX);
     }
 
-    if (IsKeyPressed(KEY_DELETE) && !anyBoxEditing())
+    if (IsKeyPressed(KEY_DELETE) && !AnyValueBoxEditing(paramBoxes, PARAM_ROWS))
     {
         model2d_RemoveSplat(list, edit->selectedSplat);
         edit->selectedSplat = -1;

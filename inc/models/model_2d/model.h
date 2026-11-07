@@ -7,6 +7,7 @@
 #include <raylib.h>
 
 #include "common.h"
+#include "gui/valuerow.h"
 
 #define MEMORY_GRID_POINTS 200001
 #define MEMORY_GRID_SIZE 0.00001f
@@ -29,6 +30,8 @@
 #define MAX_SYMBOLS               8
 #define NUMBER_OF_SPLAT_FUNCTIONS 8
 #define MAX_SPLATS                32
+
+#define PARAMETER_ROWS 8
 
 typedef struct State2DS {
     float complex S;
@@ -106,6 +109,10 @@ typedef struct InputViewS {
     float brushSize;
 } InputViewT;
 
+typedef struct ParameterViewS {
+    ValueBoxT boxes[PARAMETER_ROWS];
+} ParameterViewT;
+
 typedef struct SliceViewS {
     int   xAxis;
     int   yAxis;
@@ -128,6 +135,10 @@ typedef struct Model2DParametersS {
     float dt;
     float sigma_M;
     float omega;
+    float complex startS;
+    float startTheta;
+    float startX;
+    float startm;
 } Model2DParametersT;
 
 struct Model2DDataS {
@@ -139,11 +150,11 @@ struct Model2DDataS {
     Memory2DT memory;
 
     float *initM;
-    float complex startS;
 
     KeyframeProgramT program;
     KeyframeEditT    edit;
     InputViewT       input;
+    ParameterViewT   parameterView;
 
     SliceViewT slice;
 };
