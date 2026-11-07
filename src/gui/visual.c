@@ -108,10 +108,19 @@ void DrawMap(Rectangle rect, int cellSize,
     drawAxes(rect, axes);
 }
 
-void DrawScope(Rectangle rect,
-               int lineThickness,
-               ScopeFunc func, const void *ctx,
-               PlotAxesT axes)
+static Rectangle innerRect(Rectangle rect, int lineThickness)
+{
+    return (Rectangle){rect.x + lineThickness,
+                       rect.y + lineThickness,
+                       rect.width - 2*lineThickness,
+                       rect.height - 2*lineThickness};
+}
+
+static void drawScope(Rectangle rect,
+                      int lineThickness,
+                      ScopeFunc func, ScopeColorFunc colorFunc,
+                      const void *ctx,
+                      PlotAxesT axes)
 {
     float xmin = axes.xmin, xmax = axes.xmax;
     float ymin = axes.ymin, ymax = axes.ymax;
@@ -119,10 +128,7 @@ void DrawScope(Rectangle rect,
     DrawRectangleRec(rect, (Color){ 15, 18, 24, 255 });
     DrawRectangleLinesEx(rect, lineThickness, RAYWHITE);
 
-    Rectangle inner = (Rectangle){rect.x + lineThickness,
-                                  rect.y + lineThickness,
-                                  rect.width - 2*lineThickness,
-                                  rect.height - 2*lineThickness};
+    Rectangle inner = innerRect(rect, lineThickness);
 
     // Grid
     for (int i = 1; i < 4; i++) {
@@ -155,13 +161,74 @@ void DrawScope(Rectangle rect,
         };
 
         if (i > 0) {
-            DrawLineV(prev, p, GREEN);
+            Color color = colorFunc ? colorFunc(ctx, xarg) : GREEN;
+            DrawLineV(prev, p, color);
         }
 
         prev = p;
     }
 
     drawAxes(rect, axes);
+}
+
+void DrawScope(Rectangle rect,
+               int lineThickness,
+               ScopeFunc func, const void *ctx,
+               PlotAxesT axes)
+{
+    drawScope(rect, lineThickness, func, NULL, ctx, axes);
+}
+
+void DrawColoredScope(Rectangle rect,
+                      int lineThickness,
+                      ScopeFunc func, ScopeColorFunc colorFunc,
+                      const void *ctx,
+                      PlotAxesT axes)
+{
+    drawScope(rect, lineThickness, func, colorFunc, ctx, axes);
+}
+
+void DrawVerticalLine(Rectangle rect, int lineThickness,
+                      float x,
+                      PlotAxesT axes,
+                      Color color)
+{
+    if (x < axes.xmin || x > axes.xmax || axes.xmax <= axes.xmin)
+    {
+        return;
+    }
+
+    Rectangle inner = innerRect(rect, lineThickness);
+    float px = inner.x + (x - axes.xmin)/(axes.xmax - axes.xmin)*inner.width;
+    DrawLine(px, inner.y, px, inner.y + inner.height, color);
+}
+
+void DrawColorBar(Rectangle rect, int lineThickness,
+                  ColorFunc color,
+                  const char *label,
+                  float vmin, float vmax)
+{
+    Rectangle inner = innerRect(rect, lineThickness);
+    for (int py = 0; py < inner.height; py++)
+    {
+        float v = vmax - ((float)py / inner.height) * (vmax - vmin);
+        DrawLine(inner.x, inner.y + py, inner.x + inner.width, inner.y + py, color(v));
+    }
+    DrawRectangleLinesEx(rect, lineThickness, RAYWHITE);
+
+    float right = rect.x + rect.width + 4;
+    DrawText(TextFormat("%.3g", vmax), right, rect.y, AXIS_FONT_SIZE, AXIS_COLOR);
+    DrawText(TextFormat("%.3g", 0.5f*(vmin + vmax)), right,
+             rect.y + (rect.height - AXIS_FONT_SIZE)/2, AXIS_FONT_SIZE, AXIS_COLOR);
+    DrawText(TextFormat("%.3g", vmin), right,
+             rect.y + rect.height - AXIS_FONT_SIZE, AXIS_FONT_SIZE, AXIS_COLOR);
+
+    if (label)
+    {
+        int w = MeasureText(label, AXIS_FONT_SIZE);
+        DrawText(label, rect.x + (rect.width - w)/2, rect.y - AXIS_FONT_SIZE - 4,
+                 AXIS_FONT_SIZE, RAYWHITE);
+    }
 }
 
 void DrawDot(Rectangle map, int margin,

@@ -6,6 +6,8 @@
 
 typedef float (*MapFunc)(const void *ctx, float x, float y);
 typedef float (*ScopeFunc)(const void *ctx, float x);
+typedef Color (*ScopeColorFunc)(const void *ctx, float x);
+typedef Color (*ColorFunc)(float v);
 
 typedef struct PlotAxesS {
     const char *title;
@@ -25,6 +27,19 @@ void DrawScope(Rectangle rect,
                int lineThickness,
                ScopeFunc func, const void *ctx,
                PlotAxesT axes);
+void DrawColoredScope(Rectangle rect,
+                      int lineThickness,
+                      ScopeFunc func, ScopeColorFunc colorFunc,
+                      const void *ctx,
+                      PlotAxesT axes);
+void DrawVerticalLine(Rectangle rect, int lineThickness,
+                      float x,
+                      PlotAxesT axes,
+                      Color color);
+void DrawColorBar(Rectangle rect, int lineThickness,
+                  ColorFunc color,
+                  const char *label,
+                  float vmin, float vmax);
 void DrawDot(Rectangle map, int margin,
              float x, float y,
              PlotAxesT axes,
