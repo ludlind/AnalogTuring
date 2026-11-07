@@ -136,7 +136,7 @@ static void drawScope(Rectangle rect,
         DrawLine(inner.x, y, inner.x + inner.width, y, (Color){ 60, 70, 80, 255 });
     }
 
-    for (int i = 1; i < 8; i++) {
+    for (int i = 1; i < 8 && !axes.hideXGrid; i++) {
         float x = inner.x + inner.width * i / 8.0f;
         DrawLine(x, inner.y, x, inner.y + inner.height, (Color){ 60, 70, 80, 255 });
     }

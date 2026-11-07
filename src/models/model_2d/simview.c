@@ -16,14 +16,17 @@ static const Color phaseMarkColor = { 200, 200, 200, 120 };
 static const PlotAxesT SHistoryAxes = {
     "S(t)", "t", "|S|",
     0.0f, 0.0f, 0.0f, STATE_MAX_RADIUS,
+    .hideXGrid = true,
 };
 static const PlotAxesT XHistoryAxes = {
     "X(t)", "t", "X",
     0.0f, 0.0f, MEMORY_START_POSITION, MEMORY_STOP_POSITION,
+    .hideXGrid = true,
 };
 static const PlotAxesT mHistoryAxes = {
     "m(t)", "t", "m",
     0.0f, 0.0f, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    .hideXGrid = true,
 };
 
 static Color angleColor(float angle)

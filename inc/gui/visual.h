@@ -15,6 +15,7 @@ typedef struct PlotAxesS {
     const char *ylabel;
     float xmin, xmax;
     float ymin, ymax;
+    bool hideXGrid;
 } PlotAxesT;
 
 Color ColorMap(float v);

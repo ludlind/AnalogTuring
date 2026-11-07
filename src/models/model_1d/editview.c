@@ -19,10 +19,12 @@ static Rectangle SigmaMSlider = { 460, 230, 300, 20 };
 static const PlotAxesT stateMapAxes = {
     "State map", "S", "m",
     STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    false,
 };
 static const PlotAxesT initTapeAxes = {
     "Initial tape M0(x)", "x", "M",
     MEMORY_START_POSITION, MEMORY_STOP_POSITION, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    false,
 };
 
 static float plotStateMap(const void *ctx, float S, float m)

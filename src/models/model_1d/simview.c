@@ -14,26 +14,32 @@ static Rectangle tapeGr  = { 705, 380, 260, 200 };
 static const PlotAxesT FSAxes = {
     "F_S(S, m)", "S", "m",
     STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    false,
 };
 static const PlotAxesT FMAxes = {
     "F_M(S, m)", "S", "m",
     STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    false,
 };
 static const PlotAxesT FXAxes = {
     "F_X(S, m)", "S", "m",
     STATE_MIN_VALUE, STATE_MAX_VALUE, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    false,
 };
 static const PlotAxesT SHistoryAxes = {
     "S(t)", "t", "S",
     0.0f, 0.0f, STATE_MIN_VALUE, STATE_MAX_VALUE,
+    false,
 };
 static const PlotAxesT XHistoryAxes = {
     "X(t)", "t", "X",
     0.0f, 0.0f, MEMORY_START_POSITION, MEMORY_STOP_POSITION,
+    false,
 };
 static const PlotAxesT tapeAxes = {
     "Tape M(x)", "x", "M",
     MEMORY_START_POSITION, MEMORY_STOP_POSITION, MEMORY_MIN_VALUE, MEMORY_MAX_VALUE,
+    false,
 };
 
 static float plotFS(const void *ctx, float S, float m)
