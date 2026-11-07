@@ -11,6 +11,7 @@
 #define AXIS_FONT_SIZE  16
 #define TITLE_FONT_SIZE 20
 #define AXIS_COLOR      LIGHTGRAY
+#define MAP_EMPTY_COLOR (Color){ 25, 28, 34, 255 }
 
 static void drawRotatedText(const char *text, float x, float y)
 {
@@ -97,15 +98,15 @@ void DrawMap(Rectangle rect, int cellSize,
             float x = xmin + ((float)px / inner.width) * (xmax - xmin);
             float y = ymin + (1.0f - ((float)py / inner.height)) * (ymax - ymin);
 
-            float v = (map(ctx, x, y) - zmin)/(zmax - zmin);
-            v = clamp(v, 0.0f, 1.0f);
+            float z = map(ctx, x, y);
+            float v = clamp((z - zmin)/(zmax - zmin), 0.0f, 1.0f);
 
             DrawRectangle(
                 (int)inner.x + px,
                 (int)inner.y + py,
                 fmin(cellSize, inner.width - px),
                 fmin(cellSize, inner.height - py),
-                ColorMap(v)
+                isnan(z) ? MAP_EMPTY_COLOR : ColorMap(v)
             );
         }
     }
@@ -311,14 +312,43 @@ typedef struct ScalarCellS {
     float zmin, zmax;
 } ScalarCellT;
 
+Color ColorComplex(float complex F, float scale)
+{
+    if (isnan(crealf(F)) || isnan(cimagf(F)))
+    {
+        return MAP_EMPTY_COLOR;
+    }
+    Color color = ColorAngle(cargf(F));
+    float brightness = 1.0f - expf(-cabsf(F)/scale);
+    return ColorBrightness(color, brightness - 1.0f);
+}
+
 static Color complexCellColor(const void *cellCtx, float complex z)
 {
     const ComplexCellT *cell = cellCtx;
-    float complex F = cell->map(cell->ctx, z);
+    return ColorComplex(cell->map(cell->ctx, z), cell->scale);
+}
 
-    Color color = ColorAngle(cargf(F));
-    float brightness = 1.0f - expf(-cabsf(F)/cell->scale);
-    return ColorBrightness(color, brightness - 1.0f);
+void DrawComplexMap(Rectangle rect, int cellSize, int lineThickness,
+                    ComplexXYMapFunc map, const void *ctx,
+                    PlotAxesT axes, float scale)
+{
+    DrawRectangleLinesEx(rect, lineThickness, RAYWHITE);
+    Rectangle inner = innerRect(rect, lineThickness);
+
+    for (int py = 0; py < inner.height; py += cellSize) {
+        for (int px = 0; px < inner.width; px += cellSize) {
+            float x = axes.xmin + ((px + 0.5f*cellSize) / inner.width) * (axes.xmax - axes.xmin);
+            float y = axes.ymin + (1.0f - (py + 0.5f*cellSize) / inner.height) * (axes.ymax - axes.ymin);
+
+            DrawRectangle((int)inner.x + px, (int)inner.y + py,
+                          fmin(cellSize, inner.width - px),
+                          fmin(cellSize, inner.height - py),
+                          ColorComplex(map(ctx, x, y), scale));
+        }
+    }
+
+    drawAxes(rect, axes);
 }
 
 static Color scalarCellColor(const void *cellCtx, float complex z)

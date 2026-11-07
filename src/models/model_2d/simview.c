@@ -6,9 +6,6 @@
 #include "models/model_2d/solver.h"
 #include "models/model_2d/simview.h"
 
-#define FIELD_MIN -1.0f
-#define FIELD_MAX  1.0f
-
 static Rectangle FSPolarGr  = { 65, 60, 220, 220 };
 static Rectangle FSColorBar = { 293, 60, 12, 220 };
 static Rectangle FMPolarGr  = { 385, 60, 220, 220 };

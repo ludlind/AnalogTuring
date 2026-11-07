@@ -8,6 +8,7 @@
 typedef float (*MapFunc)(const void *ctx, float x, float y);
 typedef float complex (*ComplexMapFunc)(const void *ctx, float complex z);
 typedef float (*PolarScalarFunc)(const void *ctx, float complex z);
+typedef float complex (*ComplexXYMapFunc)(const void *ctx, float x, float y);
 typedef float (*ScopeFunc)(const void *ctx, float x);
 typedef Color (*ScopeColorFunc)(const void *ctx, float x);
 typedef Color (*ColorFunc)(float v);
@@ -23,6 +24,10 @@ typedef struct PlotAxesS {
 
 Color ColorMap(float v);
 Color ColorAngle(float angle);
+Color ColorComplex(float complex F, float scale);
+void DrawComplexMap(Rectangle rect, int cellSize, int lineThickness,
+                    ComplexXYMapFunc map, const void *ctx,
+                    PlotAxesT axes, float scale);
 void DrawPolarMap(Rectangle rect, int rings, int sectors,
                   ComplexMapFunc map, const void *ctx,
                   const char *title, float radius, float scale);

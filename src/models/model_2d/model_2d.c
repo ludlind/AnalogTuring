@@ -7,6 +7,7 @@
 #include "models/model_2d/model.h"
 #include "models/model_2d/solver.h"
 #include "models/model_2d/simview.h"
+#include "models/model_2d/sliceview.h"
 #include "models/model_2d/velocity_constant.h"
 
 static void *createWith(const VelocityField2DT *velocity, const ParametersT *runtime)
@@ -32,6 +33,8 @@ static void *createWith(const VelocityField2DT *velocity, const ParametersT *run
     data->parameters.dt = 0.001f;
     data->parameters.sigma_M = 0.01f;
     data->parameters.omega = 2.0f*PI;
+
+    model2d_InitSliceView(&data->slice);
 
     velocity->init(data);
     model2d_resetState(data);
@@ -69,12 +72,36 @@ static void updateSimulationPanel(void *data)
     runWithinBudget(d->runtime, stepModel, d);
 }
 
+static void updateSlicePanel(void *data)
+{
+    Model2DDataT *d = model2d_of(data);
+
+    if (!d->slice.follow)
+    {
+        return;
+    }
+
+    if (IsKeyPressed(KEY_R))
+    {
+        model2d_resetState(d);
+    }
+
+    runWithinBudget(d->runtime, stepModel, d);
+    model2d_SyncSliceToState(&d->slice, &d->state);
+}
+
 static void addPanels(void *data, PanelListT *panels)
 {
     addPanel(panels, (PanelT){
         .name = "Simulation",
         .update = updateSimulationPanel,
         .draw = model2d_DrawSimulationView,
+        .ctx = data,
+    });
+    addPanel(panels, (PanelT){
+        .name = "Slice",
+        .update = updateSlicePanel,
+        .draw = model2d_DrawSliceView,
         .ctx = data,
     });
 }

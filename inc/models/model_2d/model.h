@@ -20,6 +20,9 @@
 
 #define STATE_MAX_RADIUS 1.0f
 
+#define FIELD_MIN -1.0f
+#define FIELD_MAX  1.0f
+
 #define TIME_MEMORY_GRID_POINTS 10001
 
 typedef struct State2DS {
@@ -44,6 +47,31 @@ typedef struct Memory2DS {
     float XMem[TIME_MEMORY_GRID_POINTS];
     float mMem[TIME_MEMORY_GRID_POINTS];
 } Memory2DT;
+
+typedef enum SliceVarE {
+    SLICE_RE_S,
+    SLICE_IM_S,
+    SLICE_ABS_S,
+    SLICE_ARG_S,
+    SLICE_M,
+    SLICE_THETA,
+    SLICE_VAR_COUNT,
+} SliceVarT;
+
+typedef enum SliceFieldE {
+    SLICE_F_S,
+    SLICE_F_M,
+    SLICE_F_X,
+} SliceFieldT;
+
+typedef struct SliceViewS {
+    int   xAxis;
+    int   yAxis;
+    int   field;
+    int   polarSliders;
+    bool  follow;
+    float values[SLICE_VAR_COUNT];
+} SliceViewT;
 
 typedef struct Model2DDataS Model2DDataT;
 
@@ -70,6 +98,8 @@ struct Model2DDataS {
 
     float *initM;
     float complex startS;
+
+    SliceViewT slice;
 };
 
 static inline Model2DDataT *model2d_of(void *p) { return p; }
