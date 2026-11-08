@@ -4,6 +4,7 @@
 #include <complex.h>
 #include <raylib.h>
 #include "common.h"
+#include "lib/history.h"
 
 typedef float (*MapFunc)(const void *ctx, float x, float y);
 typedef float complex (*ComplexMapFunc)(const void *ctx, float complex z);
@@ -21,6 +22,14 @@ typedef struct PlotAxesS {
     float ymin, ymax;
     bool hideXGrid;
 } PlotAxesT;
+
+typedef struct ScopeRangeS {
+    float low;
+    float high;
+    Color color;
+} ScopeRangeT;
+
+typedef bool (*ScopeRangeFunc)(const void *ctx, int column, ScopeRangeT *range);
 
 Color ColorMap(float v);
 Color ColorAngle(float angle);
@@ -55,6 +64,13 @@ void DrawColoredScope(Rectangle rect,
                       int lineThickness,
                       ScopeFunc func, ScopeColorFunc colorFunc,
                       const void *ctx,
+                      PlotAxesT axes);
+int ScopeColumns(Rectangle rect, int lineThickness);
+void DrawRangeScope(Rectangle rect, int lineThickness,
+                    ScopeRangeFunc func, const void *ctx,
+                    PlotAxesT axes);
+void DrawHistoryScope(Rectangle rect, int lineThickness,
+                      const HistoryBinsT *bins, const float *history,
                       PlotAxesT axes);
 void DrawVerticalLine(Rectangle rect, int lineThickness,
                       float x,

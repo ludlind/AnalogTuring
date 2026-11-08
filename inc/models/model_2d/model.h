@@ -44,6 +44,7 @@ typedef struct State2DS {
     float omega;
     float dt;
     float t;
+    int   steps;
 } State2DT;
 
 typedef struct Memory2DS {

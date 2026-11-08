@@ -100,6 +100,7 @@ void model1d_resetState(Model1DDataT *data)
     state->sigma_M = data->parameters.sigma_M;
     state->dt = data->parameters.dt;
     state->t = 0.0f;
+    state->steps = 0;
 
     for (int i = 0; i < MEMORY_GRID_POINTS; i++)
     {
@@ -152,7 +153,8 @@ void model1d_stepState(Model1DDataT *data)
     state->S = S;
     state->X = X;
     state->m = model1d_interpM(data, X);
-    state->t += state->dt;
+    state->steps++;
+    state->t = state->steps*state->dt;
 
     // STATE MEMORY
 

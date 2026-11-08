@@ -58,24 +58,38 @@ static Color fieldColor(float v)
     return ColorMap((v - FIELD_MIN)/(FIELD_MAX - FIELD_MIN));
 }
 
-static float plotSAbsHistory(const void *ctx, float t)
-{
-    return cabsf(model2d_interpS(ctx, t));
-}
+typedef struct SHistoryScopeS {
+    const HistoryBinsT *bins;
+    const float complex *history;
+} SHistoryScopeT;
 
-static Color plotSArgHistory(const void *ctx, float t)
+static bool plotSHistory(const void *ctx, int column, ScopeRangeT *range)
 {
-    return ColorAngle(cargf(model2d_interpS(ctx, t)));
-}
+    const SHistoryScopeT *scope = ctx;
+    int first, last;
+    if (!historyColumnSamples(scope->bins, column, &first, &last))
+    {
+        return false;
+    }
 
-static float plotXHistory(const void *ctx, float t)
-{
-    return model2d_interpX(ctx, t);
-}
-
-static float plotmHistory(const void *ctx, float t)
-{
-    return model2d_interpm(ctx, t);
+    float complex largest = scope->history[historySlot(scope->bins, first)];
+    range->low = range->high = cabsf(largest);
+    for (int sample = first + 1; sample <= last; sample++)
+    {
+        float complex S = scope->history[historySlot(scope->bins, sample)];
+        float magnitude = cabsf(S);
+        if (magnitude < range->low)
+        {
+            range->low = magnitude;
+        }
+        if (magnitude > range->high)
+        {
+            range->high = magnitude;
+            largest = S;
+        }
+    }
+    range->color = ColorAngle(cargf(largest));
+    return true;
 }
 
 static PlotAxesT withTimeRange(PlotAxesT axes, float t1, float t2)
@@ -105,15 +119,17 @@ void model2d_DrawSimulationView(void *data)
 {
     Model2DDataT *d = model2d_of(data);
 
-    float t1 = model2d_getMemoryStartTime(d);
-    float t2 = d->state.t;
+    HistoryBinsT bins = historyBins(d->state.steps, TIME_MEMORY_GRID_POINTS, ScopeColumns(SHistoryGr, 2));
+    SHistoryScopeT SScope = { &bins, d->memory.SMem };
+    float t1 = historyWindowStart(&bins, d->state.dt);
+    float t2 = historyWindowEnd(&bins, d->state.dt);
     float omega = d->state.omega;
 
     PlotAxesT SAxes = withTimeRange(SHistoryAxes, t1, t2);
     PlotAxesT XAxes = withTimeRange(XHistoryAxes, t1, t2);
     PlotAxesT mAxes = withTimeRange(mHistoryAxes, t1, t2);
 
-    DrawColoredScope(SHistoryGr, 2, plotSAbsHistory, plotSArgHistory, d, SAxes);
+    DrawRangeScope(SHistoryGr, 2, plotSHistory, &SScope, SAxes);
     DrawPolarMap(FSPolarGr, 20, 64, plotFS, d, "F_S(S; theta, m)", STATE_MAX_RADIUS, 1.0f);
     DrawPolarDot(FSPolarGr, STATE_MAX_RADIUS, d->state.S, RAYWHITE);
     DrawColorBar(FSColorBar, 1, ColorAngle, "arg F_S", -PI, PI);
@@ -127,8 +143,8 @@ void model2d_DrawSimulationView(void *data)
     DrawColorBar(FXColorBar, 1, fieldColor, "F_X", FIELD_MIN, FIELD_MAX);
 
     DrawColorBar(SColorBar, 1, ColorAngle, "arg S", -PI, PI);
-    DrawScope(XHistoryGr, 2, plotXHistory, d, XAxes);
-    DrawScope(mHistoryGr, 2, plotmHistory, d, mAxes);
+    DrawHistoryScope(XHistoryGr, 2, &bins, d->memory.XMem, XAxes);
+    DrawHistoryScope(mHistoryGr, 2, &bins, d->memory.mMem, mAxes);
 
     drawPhaseMarks(SHistoryGr, SAxes, omega);
     drawPhaseMarks(XHistoryGr, XAxes, omega);

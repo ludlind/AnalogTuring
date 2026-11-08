@@ -141,6 +141,7 @@ void model2d_resetState(Model2DDataT *data)
     state->omega = data->parameters.omega;
     state->dt = data->parameters.dt;
     state->t = 0.0f;
+    state->steps = 0;
 
     for (int i = 0; i < MEMORY_GRID_POINTS; i++)
     {
@@ -194,7 +195,8 @@ void model2d_stepState(Model2DDataT *data)
     state->X = X;
     state->theta = theta;
     state->m = model2d_interpM(data, X);
-    state->t += state->dt;
+    state->steps++;
+    state->t = state->steps*state->dt;
 
     memory->SMem[memory->currentMemIndex] = state->S;
     memory->thetaMem[memory->currentMemIndex] = state->theta;

@@ -60,16 +60,6 @@ static float plotFM(const void *ctx, float S, float m)
     return data->velocity->F_M(data, S, m);
 }
 
-static float plotSHistory(const void *ctx, float t)
-{
-    return model1d_interpS(ctx, t);
-}
-
-static float plotXHistory(const void *ctx, float t)
-{
-    return model1d_interpX(ctx, t);
-}
-
 static float plotTape(const void *ctx, float x)
 {
     return model1d_interpM(ctx, x);
@@ -89,8 +79,9 @@ void model1d_DrawSimulationView(void *data)
     float S = d->state.S;
     float m = d->state.m;
 
-    float t1 = model1d_getMemoryStartTime(d);
-    float t2 = d->state.t;
+    HistoryBinsT bins = historyBins(d->state.steps, TIME_MEMORY_GRID_POINTS, ScopeColumns(SMemGr, 2));
+    float t1 = historyWindowStart(&bins, d->state.dt);
+    float t2 = historyWindowEnd(&bins, d->state.dt);
 
     DrawMap(FSMapGr, 5, 2, 0, plotFS, d, FSAxes, -1.0f, 1.0f);
     DrawMap(FMMapGr, 5, 2, 0, plotFM, d, FMAxes, -1.0f, 1.0f);
@@ -100,7 +91,7 @@ void model1d_DrawSimulationView(void *data)
     DrawDot(FMMapGr, 2, S, m, FMAxes, RAYWHITE);
     DrawDot(FXMapGr, 2, S, m, FXAxes, RAYWHITE);
 
-    DrawScope(SMemGr, 2, plotSHistory, d, withTimeRange(SHistoryAxes, t1, t2));
-    DrawScope(XMemGr, 2, plotXHistory, d, withTimeRange(XHistoryAxes, t1, t2));
+    DrawHistoryScope(SMemGr, 2, &bins, d->memory.SMem, withTimeRange(SHistoryAxes, t1, t2));
+    DrawHistoryScope(XMemGr, 2, &bins, d->memory.XMem, withTimeRange(XHistoryAxes, t1, t2));
     DrawScope(tapeGr, 2, plotTape, d, tapeAxes);
 }

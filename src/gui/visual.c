@@ -122,15 +122,8 @@ static Rectangle innerRect(Rectangle rect, int lineThickness)
                        rect.height - 2*lineThickness};
 }
 
-static void drawScope(Rectangle rect,
-                      int lineThickness,
-                      ScopeFunc func, ScopeColorFunc colorFunc,
-                      const void *ctx,
-                      PlotAxesT axes)
+static void drawScopeBackground(Rectangle rect, int lineThickness, PlotAxesT axes)
 {
-    float xmin = axes.xmin, xmax = axes.xmax;
-    float ymin = axes.ymin, ymax = axes.ymax;
-
     DrawRectangleRec(rect, (Color){ 15, 18, 24, 255 });
     DrawRectangleLinesEx(rect, lineThickness, RAYWHITE);
 
@@ -150,6 +143,20 @@ static void drawScope(Rectangle rect,
     // Center axis
     float cy = inner.y + inner.height * 0.5f;
     DrawLine(inner.x, cy, inner.x + inner.width, cy, GRAY);
+}
+
+static void drawScope(Rectangle rect,
+                      int lineThickness,
+                      ScopeFunc func, ScopeColorFunc colorFunc,
+                      const void *ctx,
+                      PlotAxesT axes)
+{
+    float xmin = axes.xmin, xmax = axes.xmax;
+    float ymin = axes.ymin, ymax = axes.ymax;
+
+    drawScopeBackground(rect, lineThickness, axes);
+
+    Rectangle inner = innerRect(rect, lineThickness);
 
     // Waveform
     Vector2 prev = { 0 };
@@ -192,6 +199,71 @@ void DrawColoredScope(Rectangle rect,
                       PlotAxesT axes)
 {
     drawScope(rect, lineThickness, func, colorFunc, ctx, axes);
+}
+
+int ScopeColumns(Rectangle rect, int lineThickness)
+{
+    return (int)innerRect(rect, lineThickness).width;
+}
+
+static float scopePixelY(Rectangle inner, PlotAxesT axes, float y)
+{
+    float v = clamp((y - axes.ymin)/(axes.ymax - axes.ymin), 0.0f, 1.0f);
+    return inner.y + inner.height - v*inner.height;
+}
+
+void DrawRangeScope(Rectangle rect, int lineThickness,
+                    ScopeRangeFunc func, const void *ctx,
+                    PlotAxesT axes)
+{
+    drawScopeBackground(rect, lineThickness, axes);
+
+    Rectangle inner = innerRect(rect, lineThickness);
+    ScopeRangeT previous = { 0 };
+    bool hasPrevious = false;
+
+    for (int column = 0; column < (int)inner.width; column++)
+    {
+        ScopeRangeT range;
+        if (!func(ctx, column, &range))
+        {
+            hasPrevious = false;
+            continue;
+        }
+
+        float low = hasPrevious ? fminf(range.low, previous.high) : range.low;
+        float high = hasPrevious ? fmaxf(range.high, previous.low) : range.high;
+        int top = (int)floorf(scopePixelY(inner, axes, high));
+        int bottom = (int)ceilf(scopePixelY(inner, axes, low));
+        int height = (bottom > top) ? bottom - top : 1;
+
+        DrawRectangle((int)inner.x + column, top, 1, height, range.color);
+
+        previous = range;
+        hasPrevious = true;
+    }
+
+    drawAxes(rect, axes);
+}
+
+typedef struct HistoryScopeS {
+    const HistoryBinsT *bins;
+    const float *history;
+} HistoryScopeT;
+
+static bool historyScopeRange(const void *ctx, int column, ScopeRangeT *range)
+{
+    const HistoryScopeT *scope = ctx;
+    range->color = GREEN;
+    return historyColumnRange(scope->bins, scope->history, column, &range->low, &range->high);
+}
+
+void DrawHistoryScope(Rectangle rect, int lineThickness,
+                      const HistoryBinsT *bins, const float *history,
+                      PlotAxesT axes)
+{
+    HistoryScopeT scope = { bins, history };
+    DrawRangeScope(rect, lineThickness, historyScopeRange, &scope, axes);
 }
 
 void DrawVerticalLine(Rectangle rect, int lineThickness,

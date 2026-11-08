@@ -35,6 +35,7 @@ typedef struct StateS {
     float sigma_M;
     float dt;
     float t;
+    int   steps;
 } StateT;
 
 typedef struct MemoryS {
